@@ -3,12 +3,12 @@ import random
 import math
 from threading import Thread
 from time import sleep
-try:
-    import smbus
+if 1:
+    #import smbus
     import RPi.GPIO as GPIO
     bus = smbus.SMBus(1)
     onRpi = 1
-except:
+else:
     bus = None
     onRpi = 0
 
@@ -66,7 +66,8 @@ class SiteFrame:
         return celsius
 
     def analog_read(self, chn):
-        value = self.bus.read_byte_data(self.address, self.cmd + chn)
+        #value = self.bus.read_byte_data(self.address, self.cmd + chn)
+        value = GPIO.input(chn)
         return value
 
 
