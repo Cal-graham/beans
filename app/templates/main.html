@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/Main/css/Main.css">
+
+<div class="container-fluid">
+        <!-- Example row of columns -->
+        <div class="row">
+            <div class="container-fluid" id="data-container"></div>
+        </div>
+</div>
+
+<!-- <div class="ct-chart ct-perfect-fourth"></div> -->
+<script>
+        var chart;
+
+        function requestData()
+        {
+            // Ajax call to get the Data from Flask
+            var requests = $.get('/main/read');
+
+            // request is complete
+            var tm = requests.done(function (r)
+            {
+
+                console.log("TEMPERATURE", r.temperature);
+                var gpHd1 = chart.series[0],
+                    shift1 = gpHd1.data.length > 80;
+
+                var gpHd2 = chart.series[1],
+                    shift2 = gpHd2.data.length > 80;
+
+                var blr1 = chart.series[2],
+                    shift3 = blr1.data.length > 80;
+
+                var blr2 = chart.series[3],
+                    shift4 = blr2.data.length > 80;
+
+                // add the point
+                chart.series[0].addPoint([r[0],r[1]], true, shift1);
+                chart.series[1].addPoint([r[0],r[2]], true, shift2);
+                chart.series[2].addPoint([r[0],r[3]], true, shift3);
+                chart.series[3].addPoint([r[0],r[4]], true, shift4);
+
+                // call it again right away
+                setTimeout(requestData, 100);
+
+            });
+        }
+
+        $(document).ready(function() {
+
+            chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'data-container',
+                    defaultSeriesType: 'spline',
+                    events: {
+                        load: requestData
+                    }
+                },
+                title: {
+                    text: 'La Pavoni'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150,
+                    maxZoom: 20 * 1000
+                },
+                yAxis: {
+                    minPadding: 0.2,
+                    maxPadding: 0.2,
+                    title: {
+                        text: 'Temperature',
+                        margin: 80
+                    }
+                },
+                series: [{
+                    name: 'gpHd1',
+                    data: []
+                },
+                {
+                    name: 'gpHd2',
+                    data: []
+                },
+                {
+                    name: 'bolr1',
+                    data: []
+                },
+                {
+                    name: 'bolr2',
+                    data: []
+                }]
+            });
+        });
+
+</script>
+<script src="/static/Main/js/Main.js"></script>
+
+{% endblock %}
+
+
+{% block foot %}
+
+{% endblock %}
+
