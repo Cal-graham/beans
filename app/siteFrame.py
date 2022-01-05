@@ -1,22 +1,21 @@
-from flask import render_template
 import random
 import math
 from threading import Thread
 from time import sleep
-if 0:
-    import smbus
+if 1:
+    import serial
     import RPi.GPIO as GPIO
-    bus = smbus.SMBus(1)
     onRpi = 1
-else:
+    arduino = 1
+if 0:
     print('No GPIO import')
-    bus = None
+    arduino = 0
     onRpi = 0
 
 
 class SiteFrame:
     onRpi = onRpi
-    bus = bus
+    arduino = arduino
     address = 0x48
     cmd = 0x40
     data = {}
@@ -29,6 +28,12 @@ class SiteFrame:
         'therm3': [18, 1, 'bolr1'],
         'therm4': [27, 1, 'bolr2']
     }
+    if arduino:
+        ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+        ser.reset_input_buffer()
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').rstrip()
+            print(line)
 
     def init(self):
         if self.onRpi:
@@ -51,12 +56,10 @@ class SiteFrame:
         while self.run_threads:
             result = []
             for key in self.pin.keys():
-                if self.onRpi:
+                if self.onRpi and self.arduino:
                     result.append(self.therm_read(self.pin[key][0]))
                 else:
                     result.append(random.randrange(0, 10, 1))
-            for idx, reading in enumerate(result):
-                self.current_read[idx] = self.current_read[idx] + (reading - 5)/10
             sleep(.5)
 
     def therm_read(self, chn):
@@ -67,8 +70,13 @@ class SiteFrame:
         return celsius
 
     def analog_read(self, chn):
-        #value = self.bus.read_byte_data(self.address, self.cmd + chn)
-        value = GPIO.input(chn)
+        self.ser.reset_input_buffer()
+        value = 0
+        while value == 0:
+            if self.ser.in_waiting > 0:
+                value = self.ser.readline().decode('utf-8').rstrip()
+                print(value)
+        #value = GPIO.input(chn)
         return value
 
 
