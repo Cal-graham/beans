@@ -11,7 +11,42 @@
         </div>
 </div>
 
-<!-- <div class="ct-chart ct-perfect-fourth"></div> -->
+<canvas id="birdsChart"></canvas>
+
+<script>
+    var birdsCanvas = document.getElementById("birdsChart");
+
+    var birdsData = {
+      labels: ["Spring", "Summer", "Fall", "Winter"],
+      datasets: [{
+        data: [1200, 1700, 800, 200],
+        backgroundColor: [
+          "rgba(255, 0, 0, 0.6)",
+          "rgba(0, 255,200, 0.6)",
+          "rgba(200, 0, 200, 0.6)",
+          "rgba(0, 255, 0, 0.6)"
+        ],
+        borderColor: "rgba(0, 0, 0, 0.8)"
+      }]
+    };
+
+    var chartOptions = {
+      startAngle: -Math.PI / 4,
+      legend: {
+        position: 'left'
+      },
+      animation: {
+        animateRotate: false
+      }
+    };
+
+    var polarAreaChart = new Chart(birdsCanvas, {
+      type: 'polarArea',
+      data: birdsData,
+      options: chartOptions
+    });
+</script>
+
 <script>
         var chart;
 

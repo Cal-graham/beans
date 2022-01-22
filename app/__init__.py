@@ -29,5 +29,5 @@ if __name__ == "__main__":
         return render_template('main.html')
 
     atexit.register(lambda: site_frame.exit())
-    app_.run(host='localhost', port=5000, debug=True)
+    app_.run(host='0.0.0.0', port=5000, debug=True)
 
