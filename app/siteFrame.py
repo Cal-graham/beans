@@ -32,7 +32,7 @@ class SiteFrame:
         ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8').rstrip()
+            line = string(ser.readline())
             print(line)
 
     def init(self):
@@ -74,7 +74,7 @@ class SiteFrame:
         value = 0
         while value == 0:
             if self.ser.in_waiting > 0:
-                value = self.ser.readline().decode('utf-8').rstrip()
+                self.ser.readline(); value = self.ser.readline()
                 print(value)
         #value = GPIO.input(chn)
         return value
