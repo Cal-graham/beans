@@ -32,7 +32,7 @@ class SiteFrame:
         ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
-            line = string(ser.readline())
+            line = str(ser.readline())
             print(line)
 
     def init(self):
@@ -54,29 +54,27 @@ class SiteFrame:
 
     def read_thermistors(self):
         while self.run_threads:
-            result = []
-            for key in self.pin.keys():
-                if self.onRpi and self.arduino:
-                    result.append(self.therm_read(self.pin[key][0]))
-                else:
-                    result.append(random.randrange(0, 10, 1))
+            if self.onRpi and self.arduino:
+                self.current_read = self.analog_read()
+            else:
+                self.current_read = []
+                for x in range(6):
+                    self.current_read.append(random.randrange(0, 10, 1))
             sleep(.05)
 
-    def therm_read(self, chn):
-        voltage = self.analog_read(chn) / 255.0 * 3.3
-        ratio = 10 * voltage / (3.3 - voltage)
-        kelvin = 1 / (1 / (273.15 + 25) + math.log(ratio / 10) / 3950.0)
-        celsius = kelvin - 273.15
-        return celsius
-
-    def analog_read(self, chn):
+    def analog_read(self):
         self.ser.reset_input_buffer()
-        value = 0
-        while value == 0:
+        value = '0'
+        while value == '0':
             if self.ser.in_waiting > 0:
-                self.ser.readline(); value = self.ser.readline()
-                print(value)
-        #value = GPIO.input(chn)
-        return value
-
+                self.ser.readline()
+                try:
+                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    print(value.split(','))
+                except:
+                    print("comms error")
+                    value = '0'
+                    sleep(0.05)
+            sleep(0.05)
+        return value.split(',')
 
