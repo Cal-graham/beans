@@ -60,7 +60,7 @@ class SiteFrame:
                     result.append(self.therm_read(self.pin[key][0]))
                 else:
                     result.append(random.randrange(0, 10, 1))
-            sleep(.5)
+            sleep(.05)
 
     def therm_read(self, chn):
         voltage = self.analog_read(chn) / 255.0 * 3.3
