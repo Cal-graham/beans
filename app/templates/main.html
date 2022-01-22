@@ -33,18 +33,21 @@
           "rgba(200, 0, 200, 0.6)",
           "rgba(0, 255, 0, 0.6)"
         ],
-        borderColor: "rgba(0, 0, 0, 0.8)"
+        borderColor: "rgba(0, 0, 0, 0.8`)"
       }]
     };
 
     var chartOptions = {
       startAngle: -Math.PI / 4,
-      legend: {
-        position: 'left'
-      },
       animation: {
         animateRotate: true
       }
+      elements: {
+          arc: {
+            backgroundColor: "rgba(255, 0, 100, 0.6)",
+            hoverBackgroundColor: "rgba(255, 0, 100, 0.6)"
+          }
+        }
     };
 
     var polarAreaChart = new Chart(birdsCanvas, {
@@ -65,38 +68,6 @@
 
     setInterval(refresh, 1000);
 
-    function colorize(opaque, hover, ctx) {
-      const v = ctx.raw;
-      const c = v < 35 ? '#D60000'
-        : v < 55 ? '#F46300'
-        : v < 75 ? '#0358B6'
-        : '#44DE28';
-
-      const opacity = hover ? 1 - Math.abs(v / 150) - 0.2 : 1 - Math.abs(v / 150);
-
-      return opaque ? c : Utils.transparentize(c, opacity);
-    }
-
-    function hoverColorize(ctx) {
-      return colorize(false, true, ctx);
-    }
-
-    const config = {
-      type: 'polarArea',
-      data: data,
-      options: {
-        plugins: {
-          legend: false,
-          tooltip: false,
-        },
-        elements: {
-          arc: {
-            backgroundColor: colorize.bind(null, false, false),
-            hoverBackgroundColor: hoverColorize
-          }
-        }
-      }
-    };
 
 </script>
 <script>
