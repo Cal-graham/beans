@@ -10,7 +10,7 @@ def run():
         while value == 0:
             if ser.in_waiting > 0:
                 ser.readline()
-                value = str(ser.readline()).replace("b'", '').replace(",\r\n", '')
+                value = str(ser.readline()).replace("b'", '').replace(",\\r\n", '')
                 value.split(',')
                 print(value)
                 print(int(value))
