@@ -32,7 +32,7 @@ class SiteFrame:
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
             line = str(ser.readline())
-            print(line)
+            #print(line)
 
     def init(self):
         #if self.onRpi:
@@ -63,17 +63,17 @@ class SiteFrame:
 
     def analog_read(self):
         self.ser.reset_input_buffer()
-        value = '0'
+        value = '0'; results = []
         while value == '0':
             if self.ser.in_waiting > 0:
                 self.ser.readline()
                 try:
                     value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                    print(value.split(','))
+                    results= [float(x) for x in value.split(',')]
                 except:
                     print("comms error")
                     value = '0'
                     sleep(0.05)
             sleep(0.05)
-        return value.split(',')
+        return results
 

@@ -10,7 +10,7 @@ main_blueprint = Blueprint('main', __name__)
 @main_blueprint.route('/read', methods=['GET'])
 def read():
     data = []
-    data.append(time() * 1000); [data.append(float(x)) for x in site_frame.analog_read()]
+    data.append(time() * 1000); data.append(site_frame.analog_read())
     #for x in range(4):
     #    data.append(site_frame.current_read[x])
     print(data)
