@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block content %}
@@ -59,8 +58,6 @@
     var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		console.log(r)
-		console.log(polarAreaChart.data.datasets)
                 polarAreaChart.data.datasets[0].data = [r[1], r[2], r[3], r[4], r[5], r[6]];
                 polarAreaChart.update();
         });
