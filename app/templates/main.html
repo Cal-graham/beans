@@ -4,23 +4,27 @@
 
 <link rel="stylesheet" href="/static/Main/css/Main.css">
 
-<div class="container-fluid">`1
-        <!-- Example row of columns -->
+<!--<div class="container-fluid">`1
         <div class="row">
             <div class="container-fluid" id="data-container"></div>
         </div>
+</div>-->
+<div class="columns">
+    <div class="column is-half">
+        <canvas id="birdsChart"></canvas>
+    </div>
 </div>
-
-<canvas id="birdsChart"></canvas>
 
 <script>
     var birdsCanvas = document.getElementById("birdsChart");
 
     var birdsData = {
-      labels: ["Spring", "Summer", "Fall", "Winter"],
+      labels: ["grp1", "grp2", "grp3", "blr1", "blr2", "blr3"],
       datasets: [{
-        data: [1200, 1700, 800, 200],
+        data: [1, 1, 1, 1, 1, 1],
         backgroundColor: [
+          "rgba(255, 0, 100, 0.6)",
+          "rgba(255, 0, 50, 0.6)",
           "rgba(255, 0, 0, 0.6)",
           "rgba(0, 255,200, 0.6)",
           "rgba(200, 0, 200, 0.6)",
@@ -36,7 +40,7 @@
         position: 'left'
       },
       animation: {
-        animateRotate: false
+        animateRotate: true
       }
     };
 
@@ -45,6 +49,16 @@
       data: birdsData,
       options: chartOptions
     });
+
+    var getData = function(){
+        var requests = $.get('/main/read');
+        var tm = requests.done(function(r){
+            polarAreaChart.data.datasets[0].data.push(r);
+            polarAreaChart.update();
+        });
+    }
+
+    setInterval(getData, 1000);
 </script>
 
 <script>
