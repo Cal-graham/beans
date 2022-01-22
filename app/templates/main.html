@@ -4,14 +4,16 @@
 
 <link rel="stylesheet" href="/static/Main/css/Main.css">
 
-<!--<div class="container-fluid">`1
-        <div class="row">
-            <div class="container-fluid" id="data-container"></div>
-        </div>
-</div>-->
 <div class="columns">
     <div class="column is-half">
         <canvas id="birdsChart"></canvas>
+    </div>
+    <div class="column is-half">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="container-fluid" id="data-container"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -50,18 +52,6 @@
       options: chartOptions
     });
 
-    var getData = function(){
-        var requests = $.get('/main/read');
-        var tm = requests.done(function(r){
-            polarAreaChart.data.datasets[0].data.push(r);
-            polarAreaChart.update();
-        });
-    }
-
-    setInterval(getData, 1000);
-</script>
-
-<script>
         var chart;
 
         function requestData()
@@ -91,6 +81,9 @@
                 chart.series[1].addPoint([r[0],r[2]], true, shift2);
                 chart.series[2].addPoint([r[0],r[3]], true, shift3);
                 chart.series[3].addPoint([r[0],r[4]], true, shift4);
+
+                polarAreaChart.data.datasets[0].data.push(r);
+                polarAreaChart.update();
 
                 // call it again right away
                 setTimeout(requestData, 100);
@@ -142,6 +135,7 @@
                 }]
             });
         });
+
 
 </script>
 <script src="/static/Main/js/Main.js"></script>
