@@ -28,20 +28,20 @@ class SiteFrame:
         'therm4': [27, 1, 'bolr2']
     }
     if arduino:
-        ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+        ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
             line = str(ser.readline())
             print(line)
 
     def init(self):
-        if self.onRpi:
-            GPIO.setmode(GPIO.BCM)
-            for therm in self.pin:
-                if therm[1]:
-                    GPIO.setup(therm[0], GPIO.IN)
-                else:
-                    GPIO.setup(therm[0], GPIO.OUT)
+        #if self.onRpi:
+        #    GPIO.setmode(GPIO.BCM)
+        #    for therm in self.pin:
+        #        if therm[1]:
+        #            GPIO.setup(therm[0], GPIO.IN)
+        #        else:
+        #            GPIO.setup(therm[0], GPIO.OUT)
         self.thermistor_thread = Thread(target=lambda: self.read_thermistors())
         self.thermistor_thread.start()
 
