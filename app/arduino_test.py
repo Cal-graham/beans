@@ -13,10 +13,10 @@ def run():
                 try:
                     value = str(ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
                     print(value)
-                    print(int(value.split(',')))
+                    print(value.split(','))
                 except:
                     print("comms error")
-                    value = '0'
+                    value = '0'; sleep(1)
         sleep(1)
 
 
