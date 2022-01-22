@@ -6,14 +6,17 @@ def run():
     ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
     while True:
         ser.reset_input_buffer();
-        value = 0
-        while value == 0:
+        value = '0'
+        while value == '0':
             if ser.in_waiting > 0:
                 ser.readline()
-                value = str(ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                value.split(',')
-                print(value)
-                print(int(value))
+                try:
+                    value = str(ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    print(value)
+                    print(int(value.split(',')))
+                except:
+                    print("comms error")
+                    value = '0'
         sleep(1)
 
 
