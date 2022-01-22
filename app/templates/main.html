@@ -82,7 +82,7 @@
                 chart.series[2].addPoint([r[0],r[3]], true, shift3);
                 chart.series[3].addPoint([r[0],r[4]], true, shift4);
 
-                polarAreaChart.data.datasets[0].data.push(r);
+                polarAreaChart.data.datasets[0].data.push([r[1], r[2], r[3], r[4], r[5], r[6]]);
                 polarAreaChart.update();
 
                 // call it again right away
