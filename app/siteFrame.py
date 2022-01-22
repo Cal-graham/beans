@@ -66,12 +66,11 @@ class SiteFrame:
         value = '0'; results = []
         while value == '0':
             if self.ser.in_waiting > 0:
-                self.ser.readline()
                 try:
-                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    self.ser.readline(); value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
                     results= [float(x) for x in value.split(',')]
                 except:
-                    print("comms error")
+                    #print("comms error")
                     value = '0'
                     sleep(0.05)
             sleep(0.05)
