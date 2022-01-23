@@ -91,10 +91,6 @@
     var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		console.log(r)
-		console.log(lineChart.data.datasets)
-		console.log(lineChart.data.labels)
-        console.log(polarAreaChart.data.datasets)
 
                 polarAreaChart.data.datasets[0].data = [r[1], r[2], r[3], r[4], r[5], r[6]];
                 polarAreaChart.update();
@@ -102,7 +98,7 @@
 		        var labels = lineChart.data.labels,
                     shift0 = labels.data.length > 80;
 
-                console.log(labels)
+                console.log(shift0)
 
 		        var gpHd1 = lineChart.data.datasets[0],
                     shift1 = gpHd1.data.length > 80;
@@ -111,7 +107,7 @@
                 var gpHd3 = lineChart.data.datasets[2],
                     shift3 = gpHd3.data.length > 80;
 
-                console.log(gpHd1)
+                console.log(shift1)
 
                 var blr1 = lineChart.data.datasets[3],
                     shift4 = blr1.data.length > 80;
