@@ -116,5 +116,3 @@
                 lineChart.update();
         });
     }
-
-   setInterval(refresh, 1000);
