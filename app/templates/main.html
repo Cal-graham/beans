@@ -5,10 +5,10 @@
 <link rel="stylesheet" href="/static/Main/css/Main.css">
 
 <div class="columns">
-    <div class="column is-two-thirds">
+    <div class="column is-three-quarters">
         <canvas id="lineChart"></canvas>
     </div>
-    <div class="column is-one-third">
+    <div class="column is-one-quarter">
         <canvas id="polarChart"></canvas>
     </div>
 </div>
@@ -19,22 +19,35 @@
       labels: ['1'],
       datasets: [{
         data: [1],
-        label: "grp1"
+        label: "grp1",
+	fill: false,
+	borderColor: 'rgb(255, 0, 0)'
       }, {
         data: [1],
-        label: "grp2"
+        label: "grp2",
+	fill: false,
+        borderColor: 'rgb(255, 0, 0)'
       }, {
         data: [1],
-        label: "grp3"
+        label: "grp3",
+	fill: false,
+        borderColor: 'rgb(255, 0, 0)'
       },{
         data: [1],
-        label: "blr1"
+        label: "blr1",
+	fill: false,
+        borderColor: 'rgb(255, 0, 0)'
       },{
         data: [1],
-        label: "blr2"
+        label: "blr2",
+	fill: false,
+        borderColor: 'rgb(255, 0, 0)'
       }, {
         data: [1],
-        label: "blr3"
+        label: "blr3",
+	fill: false,
+        borderColor: 'rgb(255, 0, 0)'
+
       }]
     };
 
@@ -45,6 +58,14 @@
         title: {
           display: true,
           text: 'Temp Profile'
+        },
+	elements: {
+		point : {
+			radius: 0
+		}
+	},
+	legend: {
+                display: false
         }
       }
     });
@@ -68,7 +89,14 @@
       startAngle: -Math.PI / 4,
       animation: {
         animateRotate: true
-      }
+      },
+	title : {
+		display : true,
+		text: 'Current Temp'
+	},
+	legend: {
+		display: false
+	}
    };
 
     var polarAreaChart = new Chart(document.getElementById("polarChart"), {
@@ -92,12 +120,21 @@
                 lineChart.data.datasets[3].data.push(r[4]);
                 lineChart.data.datasets[4].data.push(r[5]);
                 lineChart.data.datasets[5].data.push(r[6]);
+		if (lineChart.data.labels.length > 80) {
+		lineChart.data.labels.splice(0,1);
+                lineChart.data.datasets[0].data.splice(0,1);
+                lineChart.data.datasets[1].data.splice(0,1);
+                lineChart.data.datasets[2].data.splice(0,1);
+                lineChart.data.datasets[3].data.splice(0,1);
+                lineChart.data.datasets[4].data.splice(0,1);
+                lineChart.data.datasets[5].data.splice(0,1);
+		}
 
                 lineChart.update();
         });
     }
 
-    setInterval(refresh, 1000);
+    setInterval(refresh, 100);
 
 </script>
 

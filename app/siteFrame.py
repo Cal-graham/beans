@@ -67,7 +67,7 @@ class SiteFrame:
             if self.ser.in_waiting > 0:
                 try:
                     self.ser.readline(); value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                    results= [float(x) for x in value.split(',')]
+                    results= [float(x) for x in value.split(',')];
                 except:
                     #print("comms error")
                     value = '0'
