@@ -53,7 +53,7 @@
       }
     });
 
-    var refresh = function(){
+    var refresh1 = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 		console.log(r)
@@ -63,21 +63,21 @@
 		        var labels = lineChart.data.labels,
                     shift0 = labels.data.length > 80;
 
+                console.log(labels)
+
 		        var gpHd1 = lineChart.data.datasets[0],
                     shift1 = gpHd1.data.length > 80;
-
                 var gpHd2 = lineChart.data.datasets[1],
                     shift2 = gpHd2.data.length > 80;
-
                 var gpHd3 = lineChart.data.datasets[2],
                     shift3 = gpHd3.data.length > 80;
 
+                console.log(gpHd1)
+
                 var blr1 = lineChart.data.datasets[3],
                     shift4 = blr1.data.length > 80;
-
                 var blr2 = lineChart.data.datasets[4],
                     shift5 = blr2.data.length > 80;
-
                 var blr3 = lineChart.data.datasets[5],
                     shift6 = blr3.data.length > 80;
 
@@ -94,7 +94,7 @@
         });
     }
 
-    setInterval(refresh, 1000);
+    setInterval(refresh1, 1000);
 </script>
 
 <script>
