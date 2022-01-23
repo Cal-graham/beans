@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from app import site_frame
 import json
 from time import time
+from datetime import date
 
 
 main_blueprint = Blueprint('main', __name__)
@@ -9,8 +10,8 @@ main_blueprint = Blueprint('main', __name__)
 
 @main_blueprint.route('/read', methods=['GET'])
 def read():
-    data = []
-    data.append(time() * 1000); [data.append(x) for x in site_frame.analog_read()]
+    data = []; today = date.today()
+    data.append(today.strftime("%H:%M:%S")); [data.append(x) for x in site_frame.analog_read()]
     #for x in range(4):
     #    data.append(site_frame.current_read[x])
     print(data)
