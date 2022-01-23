@@ -53,15 +53,6 @@
       animation: {
         animateRotate: true
       }
-      plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Polar Area Chart'
-      }
-    }
    };
 
     var polarAreaChart = new Chart(document.getElementById("polarChart");, {
