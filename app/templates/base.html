@@ -33,7 +33,7 @@
     <section class="hero is-white is-fullheight">
         <div>
             <section class="section is-primary" style="width:100%">
-                <nav class="navbar is-fixed-top has-text-light" style="width:100%">
+                <nav class="navbar is-primary is-fixed-top has-text-light" style="width:100%">
 
                     <div class="navbar-brand">
                         <a class="navbar-item" href="https://www.linkedin.com/in/calum-graham/">
@@ -58,6 +58,14 @@
             </div>
         </div>
     </section>
+<section>
+    <nav class="navbar is-fixed-bottom is-white" style="align:center">
+        <div class="hero-foot" style="flex-grow: 1">
+            {% block foot %}
+            {% endblock %}
+        </div>
+    </nav>
+</section>
 </body>
 
 </html>
