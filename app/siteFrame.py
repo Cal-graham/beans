@@ -41,8 +41,8 @@ class SiteFrame:
         #            GPIO.setup(therm[0], GPIO.IN)
         #        else:
         #            GPIO.setup(therm[0], GPIO.OUT)
-        self.thermistor_thread = Thread(target=lambda: self.read_thermistors())
-        self.thermistor_thread.start()
+        #self.thermistor_thread = Thread(target=lambda: self.read_thermistors())
+        #self.thermistor_thread.start()
 
     def exit(self):
         if self.onRpi:
@@ -61,25 +61,27 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        self.ser.reset_input_buffer()
-        value = '0'
-        while value == '0':
-            results = []
-            if self.ser.in_waiting > 0:
-                try:
-                    self.ser.readline()
-                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                    results= [float(x) for x in value.split(',')]
-                    if len(results) < 6:
-                        value = '0'
-                    for idx in range(0,6):
-                        if results[idx] > 1023:
+        avg = [0,0,0,0,0,0]
+        iters = 5
+        for average in range(iters):
+            self.ser.reset_input_buffer()
+            value = '0'
+            while value == '0':
+                results = []
+                if self.ser.in_waiting > 0:
+                    try:
+                        self.ser.readline()
+                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                        results= [float(x) for x in value.split(',')]
+                        if len(results) < 6:
                             value = '0'
-                            break
-                except:
-                    #print("comms error")
-                    value = '0'
-                    sleep(0.05)
-            sleep(0.05)
-        return results
+                        for idx in range(0,6):
+                            if results[idx] > 1023:
+                                value = '0'
+                                break
+                        avg = [avg[x] + results[x] for x in range(len(results))]
+                    except:
+                        #print("comms error")
+                        value = '0'
+                return [avg[idx]/iters for idx in range(len(avg))]
 
