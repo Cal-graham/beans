@@ -61,7 +61,7 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        avg = [0,0,0,0,0,0]
+        avg = [[],[],[],[],[],[]]
         iters = 5
         for average in range(iters):
             self.ser.reset_input_buffer()
@@ -79,9 +79,10 @@ class SiteFrame:
                             if results[idx] > 1023:
                                 value = '0'
                                 break
-                        avg = [avg[x] + results[x] for x in range(len(results))]
+                            else:
+                                avg[idx].append(results[idx])
                     except:
                         #print("comms error")
                         value = '0'
-                return [avg[idx]/iters for idx in range(len(avg))]
+                return [sum(avg[idx]/len[idx]) for idx in range(6)]
 
