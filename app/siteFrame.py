@@ -34,7 +34,7 @@ class SiteFrame:
             #print(line)
 
     def init(self):
-        #if self.onRpi:
+        pass#if self.onRpi:
         #    GPIO.setmode(GPIO.BCM)
         #    for therm in self.pin:
         #        if therm[1]:
@@ -61,7 +61,7 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        avg = [[],[],[],[],[],[]]
+        avg_ = [[],[],[],[],[],[]]
         iters = 5
         for average in range(iters):
             self.ser.reset_input_buffer()
@@ -80,9 +80,9 @@ class SiteFrame:
                                 value = '0'
                                 break
                             else:
-                                avg[idx].append(results[idx])
+                                avg_[idx].append(results[idx])
                     except:
                         #print("comms error")
                         value = '0'
-                return [sum(avg[idx]/len[idx]) for idx in range(6)]
+                return [sum(avg_[idx])/len(avg_[idx]) for idx in range(6)]
 
