@@ -62,12 +62,20 @@ class SiteFrame:
 
     def analog_read(self):
         self.ser.reset_input_buffer()
-        value = '0'; results = []
+        value = '0'
         while value == '0':
+            results = []
             if self.ser.in_waiting > 0:
                 try:
-                    self.ser.readline(); value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                    results= [float(x) for x in value.split(',')];
+                    self.ser.readline()
+                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    results= [float(x) for x in value.split(',')]
+                    if len(results) < 6:
+                        value = '0'
+                    for idx in range(0,6):
+                        if results[idx] > 1023:
+                            value = '0'
+                            break
                 except:
                     #print("comms error")
                     value = '0'
