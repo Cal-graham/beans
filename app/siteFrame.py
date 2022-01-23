@@ -3,7 +3,6 @@ from threading import Thread
 from time import sleep
 if 1:
     import serial
-    import RPi.GPIO as GPIO
     onRpi = 1
     arduino = 1
 if 0:
@@ -47,7 +46,7 @@ class SiteFrame:
 
     def exit(self):
         if self.onRpi:
-            GPIO.cleanup()
+            pass#GPIO.cleanup()
         self.run_threads = 0
         print('Exited')
 

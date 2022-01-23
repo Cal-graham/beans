@@ -1,18 +1,14 @@
 # syntax=docker/dockerfile:1
 
-FROM python:slim
+FROM balenalib/raspberry-pi-debian-python:latest
 
 WORKDIR /app
 
 COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN pip install -r requirements.txt
-RUN pip install pyopenssl
+RUN pip install flask_session
 
 COPY . .
 
-ENV FLASK_APP=__init__.py
-ENV FLASK_ENV=PRODUCTION
-ENV CLIENT_SECRET=edtzB8Z.eX20AN1A6-AG4r3e8qh.WNti.o
-
-CMD flask run --host=0.0.0.0 --cert=adhoc --port=8000
+CMD python3 __init__.py
