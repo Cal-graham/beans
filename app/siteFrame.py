@@ -84,5 +84,9 @@ class SiteFrame:
                     except:
                         #print("comms error")
                         value = '0'
-                return [sum(avg_[idx])/len(avg_[idx]) for idx in range(6)]
+                try:
+                    return [sum(avg_[idx])/len(avg_[idx]) for idx in range(6)]
+                except:
+                    print(avg_)
+                    return [0,0,0,0,0,0]
 
