@@ -71,7 +71,7 @@
       }
    };
 
-    var polarAreaChart = new Chart(document.getElementById("polarChart");, {
+    var polarAreaChart = new Chart(document.getElementById("polarChart"), {
       type: 'polarArea',
       data: polarData,
       options: polarChartOptions
@@ -132,6 +132,8 @@
                 lineChart.update();
         });
     }
+
+    setInterval(refresh, 1000);
 
 </script>
 
