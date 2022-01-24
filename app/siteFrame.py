@@ -30,14 +30,14 @@ class SiteFrame:
         'therm4': [27, 1, 'bolr2']
     }
     if arduino:
-        ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
+        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
             line = str(ser.readline())
             #print(line)
 
     def init(self):
-        pass#if self.onRpi:
+        pass #if self.onRpi:
         #    GPIO.setmode(GPIO.BCM)
         #    for therm in self.pin:
         #        if therm[1]:
@@ -49,7 +49,7 @@ class SiteFrame:
 
     def exit(self):
         if self.onRpi:
-            pass#GPIO.cleanup()
+            pass #GPIO.cleanup()
         self.run_threads = 0
         print('Exited')
 
@@ -64,24 +64,24 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        self.ser.reset_input_buffer()
+        self.ser.reset_input_buffer(); print('ANALOG READ')
         value = '0'; results = []
         while value == '0':
-            read = []
+            read = []; sleep(0.1)
             if self.ser.in_waiting > 0:
-                print(self.ser.readline())
+                self.ser.readline()
                 try:
-                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                    read = [float(x) for x in value.split(',')]
+                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); # print('READ VALUE')
+                    read = [float(x) for x in value.split(',')]; # print(read, 'READ VALUE');
                     if len(read) < 6:
-                        value = '0'
+                        value = '0'; read = []
                     for idx in range(0,6):
                         if read[idx] > 1023:
-                            value = '0'
+                            value = '0'; read = []
                 except:
                     value = '0'
-            results = []
-            for idx in range(len(read)):
-                results[idx] = 3950/math.log((5-read[idx]*5/1023)*10000/(100000*math.exp(-3950/298))) - 273
-            return results
+            return read #results = []
+            #for idx in range(len(read)):
+            #    results[idx] = 3950/math.log((5-read[idx]*5/1023)*10000/(100000*math.exp(-3950/298))) - 273
+            #return results
 
