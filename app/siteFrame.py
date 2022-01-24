@@ -1,6 +1,9 @@
 import random
 from threading import Thread
 from time import sleep
+import math
+
+
 if 1:
     import serial
     onRpi = 1
@@ -61,32 +64,24 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        avg_ = [[],[],[],[],[],[]]
-        iters = 5
-        for average in range(iters):
-            self.ser.reset_input_buffer()
-            value = '0'
-            while value == '0':
-                results = []
-                if self.ser.in_waiting > 0:
-                    try:
-                        self.ser.readline()
-                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                        results= [float(x) for x in value.split(',')]
-                        if len(results) < 6:
-                            value = '0'
-                        for idx in range(0,6):
-                            if results[idx] > 1023:
-                                value = '0'
-                                break
-                            else:
-                                avg_[idx].append(results[idx])
-                    except:
-                        #print("comms error")
-                        value = '0'
+        self.ser.reset_input_buffer()
+        value = '0'
+        while value == '0':
+            read = []
+            if self.ser.in_waiting > 0:
                 try:
-                    return [sum(avg_[idx])/len(avg_[idx]) for idx in range(6)]
+                    self.ser.readline()
+                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    read = [float(x) for x in value.split(',')]
+                    if len(read) < 6:
+                        value = '0'
+                    for idx in range(0,6):
+                        if read[idx] > 1023:
+                            value = '0'
                 except:
-                    print(avg_)
-                    return [0,0,0,0,0,0]
+                    value = '0'
+            results = []
+            for idx in range(len(read)):
+                results[idx] = 3950/math.log((5-read[idx]*5/1023)*10000/(100000*math.exp(-3950/298))) - 273
+            return results
 
