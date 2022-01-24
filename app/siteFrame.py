@@ -64,15 +64,16 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
+        results = []
         for iter in range(3):
-            self.ser.reset_input_buffer(); print('ANALOG READ')
-            value = '0'; results = []; counter = 1
+            self.ser.reset_input_buffer()
+            value = '0'; counter = 1
             while value == '0':
-                read = []; sleep(0.1)
+                read = [];
                 if self.ser.in_waiting > 0:
                     self.ser.readline()
                     try:
-                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); # print('READ VALUE')
+                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); print('READ VALUE')
                         read = [float(x) for x in value.split(',')]; # print(read, 'READ VALUE');
                         if len(read) < 6:
                             value = '0'; read = []
@@ -84,5 +85,6 @@ class SiteFrame:
                         counter += 1
                     except:
                         value = '0'
-            return [val/counter for val in results]
+                sleep(0.1)
+        return [val/counter for val in results]
 
