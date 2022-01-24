@@ -69,8 +69,8 @@ class SiteFrame:
         while value == '0':
             read = []
             if self.ser.in_waiting > 0:
+                print(self.ser.readline())
                 try:
-                    self.ser.readline()
                     value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
                     read = [float(x) for x in value.split(',')]
                     if len(read) < 6:
