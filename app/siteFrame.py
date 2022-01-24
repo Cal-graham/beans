@@ -65,7 +65,7 @@ class SiteFrame:
 
     def analog_read(self):
         self.ser.reset_input_buffer()
-        value = '0'
+        value = '0'; results = []
         while value == '0':
             read = []
             if self.ser.in_waiting > 0:
