@@ -37,7 +37,7 @@ class SiteFrame:
             #print(line)
 
     def init(self):
-        pass #if self.onRpi:
+        pass#if self.onRpi:
         #    GPIO.setmode(GPIO.BCM)
         #    for therm in self.pin:
         #        if therm[1]:
@@ -49,7 +49,7 @@ class SiteFrame:
 
     def exit(self):
         if self.onRpi:
-            pass #GPIO.cleanup()
+            pass#GPIO.cleanup()
         self.run_threads = 0
         print('Exited')
 
@@ -64,27 +64,24 @@ class SiteFrame:
             sleep(.05)
 
     def analog_read(self):
-        results = []
-        for iter in range(3):
-            self.ser.reset_input_buffer()
-            value = '0'; counter = 1
-            while value == '0':
-                read = [];
-                if self.ser.in_waiting > 0:
-                    self.ser.readline()
-                    try:
-                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); print('READ VALUE')
-                        read = [float(x) for x in value.split(',')]; # print(read, 'READ VALUE');
-                        if len(read) < 6:
+        self.ser.reset_input_buffer()
+        value = '0'; results = []
+        while value == '0':
+            read = []; sleep(0.05)
+            if self.ser.in_waiting > 0:
+                print(self.ser.readline())
+                try:
+                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
+                    read = [float(x) for x in value.split(',')]
+                    if len(read) < 6:
+                        value = '0'; read = []
+                    for idx in range(0,6):
+                        if read[idx] > 1023:
                             value = '0'; read = []
-                        for idx in range(0,6):
-                            if read[idx] > 1023:
-                                value = '0'; read = []
-                        for idx in range(len(read)):
-                            results[idx] += read[idx]
-                        counter += 1
-                    except:
-                        value = '0'
-                sleep(0.1)
-        return [val/counter for val in results]
+                except:
+                    value = '0'
+            return read #results = []
+            #for idx in range(len(read)):
+            #    results[idx] = 3950/math.log((5-read[idx]*5/1023)*10000/(100000*math.exp(-3950/298))) - 273
+            #return results
 
