@@ -22,7 +22,7 @@ class SiteFrame:
     data = {}
     thermistor_thread = None
     run_threads = 1
-    current_read = [0, 0, 0, 0]
+    current_read = []
     pin = {
         'therm1': [ 4, 1, 'gpHd1'],    #
         'therm2': [17, 1, 'gpHd2'],
@@ -65,23 +65,24 @@ class SiteFrame:
 
     def analog_read(self):
         self.ser.reset_input_buffer(); print('ANALOG READ')
-        value = '0'; results = []
-        while value == '0':
-            read = []; sleep(0.1)
-            if self.ser.in_waiting > 0:
-                self.ser.readline()
-                try:
-                    value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); # print('READ VALUE')
-                    read = [float(x) for x in value.split(',')]; # print(read, 'READ VALUE');
-                    if len(read) < 6:
-                        value = '0'; read = []
-                    for idx in range(0,6):
-                        if read[idx] > 1023:
+        value = '0'; results = []; counter = 1
+        for iter in range(3):
+            while value == '0':
+                read = []; sleep(0.1)
+                if self.ser.in_waiting > 0:
+                    self.ser.readline()
+                    try:
+                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", ''); # print('READ VALUE')
+                        read = [float(x) for x in value.split(',')]; # print(read, 'READ VALUE');
+                        if len(read) < 6:
                             value = '0'; read = []
-                except:
-                    value = '0'
-            return read #results = []
-            #for idx in range(len(read)):
-            #    results[idx] = 3950/math.log((5-read[idx]*5/1023)*10000/(100000*math.exp(-3950/298))) - 273
-            #return results
+                        for idx in range(0,6):
+                            if read[idx] > 1023:
+                                value = '0'; read = []
+                        for idx in range(len(read)):
+                            results[idx] += read[idx]
+                        counter += 1
+                    except:
+                        value = '0'
+            return [val/counter for val in results]
 
