@@ -125,7 +125,7 @@
                 lineChart.data.datasets[3].data.push(r[4]);
                 lineChart.data.datasets[4].data.push(r[5]);
                 lineChart.data.datasets[5].data.push(r[6]);
-		if (lineChart.data.labels.length > 80) {
+		if (lineChart.data.labels.length > 150) {
 		lineChart.data.labels.splice(0,1);
                 lineChart.data.datasets[0].data.splice(0,1);
                 lineChart.data.datasets[1].data.splice(0,1);
@@ -139,7 +139,7 @@
         });
     }
 
-    setInterval(refresh, 500);
+    setInterval(refresh, 400);
 
 
 
