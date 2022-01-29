@@ -30,7 +30,7 @@ class SiteFrame:
         'therm4': [27, 1, 'bolr2']
     }
     if arduino:
-        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+        ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
         ser.reset_input_buffer()
         if ser.in_waiting > 0:
             line = str(ser.readline())

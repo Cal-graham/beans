@@ -19,46 +19,43 @@
       labels: ['1'],
       datasets: [{
         data: [1],
-        label: "Boiler",
+        label: "grp1",
 	fill: false,
 	borderColor: 'rgb(255, 0, 0)'
       }, {
         data: [1],
-        label: "Grouphead",
+        label: "grp2",
 	fill: false,
-        borderColor: 'rgb(255, 0, 50)'
+        borderColor: 'rgb(255, 0, 0)'
       }, {
         data: [1],
-        label: "Ambient1",
+        label: "grp3",
 	fill: false,
-        borderColor: 'rgb(0, 0, 255)'
+        borderColor: 'rgb(255, 0, 0)'
       },{
         data: [1],
-        label: "Ambient2",
+        label: "blr1",
 	fill: false,
-        borderColor: 'rgb(0, 150, 255)'
+        borderColor: 'rgb(255, 0, 0)'
       },{
         data: [1],
-        label: "Ambient3",
+        label: "blr2",
 	fill: false,
-        borderColor: 'rgb(150, 0, 255)'
-      },{
+        borderColor: 'rgb(255, 0, 0)'
+      }, {
         data: [1],
-        label: "Ambient4",
+        label: "blr3",
 	fill: false,
-        borderColor: 'rgb(150, 150, 255)'
-      },{
-	data: [0],
-	label: "",
-	fill: false,
-	borderColor: 'rgb(255, 0, 0)'
-	}]
+        borderColor: 'rgb(255, 0, 0)'
+
+      }]
     };
 
     var lineChart = new Chart(document.getElementById("lineChart"), {
       type: 'line',
       data: lineData,
       options: {
+	scales: 
         title: {
           display: true,
           text: 'Temp Profile'
@@ -69,22 +66,22 @@
 		}
 	},
 	legend: {
-                display: true
+                display: false
         }
       }
     });
 
     var polarData = {
-      labels: ["Boiler", "GroupHead", "Ambient1", "Ambient2", "Ambient3", "Ambient4"],
+      labels: ["grp1", "grp2", "grp3", "blr1", "blr2", "blr3"],
       datasets: [{
         data: [1, 1, 1, 1, 1, 1],
         backgroundColor: [
-          "rgba(255, 0, 0, 0.6)",
+          "rgba(255, 0, 100, 0.6)",
           "rgba(255, 0, 50, 0.6)",
-          "rgba(0, 0, 255, 0.6)",
-          "rgba(0, 150, 255, 0.6)",
-          "rgba(150, 0, 255, 0.6)",
-          "rgba(150, 150, 255, 0.6)"
+          "rgba(255, 0, 0, 0.6)",
+          "rgba(0, 255,200, 0.6)",
+          "rgba(200, 0, 200, 0.6)",
+          "rgba(0, 255, 0, 0.6)"
         ]
       }]
     };
@@ -92,7 +89,7 @@
     var polarChartOptions = {
       startAngle: -Math.PI / 4,
       animation: {
-        animateRotate: false
+        animateRotate: true
       },
 	title : {
 		display : true,
@@ -138,7 +135,7 @@
         });
     }
 
-    setInterval(refresh, 500);
+    setInterval(refresh, 100);
 
 </script>
 
