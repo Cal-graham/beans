@@ -48,13 +48,13 @@ class SiteFrame:
         while self.run_thread:
             try:
                 self.current_read = self.analog_read()
-                    for idx in range(len(self.current_read)):
-                        if np.abs(self.current_read[idx] - self.read_avg[idx]) > 30:
-                            self.current_read[idx] = self.read_avg[idx]
-                    self.data.append(self.current_read)
-                    temp = list(np.mean(self.data, 1))
-                    self.read_avg = temp
-                    self.data.pop(0);
+                for idx in range(len(self.current_read)):
+                    if np.abs(self.current_read[idx] - self.read_avg[idx]) > 30:
+                        self.current_read[idx] = self.read_avg[idx]
+                self.data.append(self.current_read)
+                temp = list(np.mean(self.data, 1))
+                self.read_avg = temp
+                self.data.pop(0);
             except:
                 pass
 
