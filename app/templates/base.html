@@ -3,9 +3,15 @@
 
 <head>
     <!-- Bootstraps Java Scipts Links -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
 
     <!-- JQuery links  -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -22,49 +28,61 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>B.E.A.N.S.</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css"/>
     <style>
-        CSS UPDATES
+        #sidebar{
+            position: sticky;
+            top: 0;
+            display: block
+        }
+        .menu-item{
+            menu-item-color: black
+        }
+        .menu-list :hover{
+            background-color:turquoise !important;
+        }
+
+
     </style>
 </head>
 
 <body>
-    <section class="hero is-white is-fullheight">
-        <div>
-            <section class="section is-primary" style="width:100%">
-                <nav class="navbar is-primary is-fixed-top has-text-light" style="width:100%">
+<nav class="navbar is-dark is-fixed-top" style="width:100%">
+    <div class="navbar-item">
+        <h1 class="title" style="color:white">B.E.A.N.S.</h1>
+    </div>
+</nav>
+<br><br>
 
-                    <div class="navbar-brand">
-                        <a class="navbar-item" href="https://www.linkedin.com/in/calum-graham/">
-                            <span class="icon">
-                            </span>
-                        </a>
-                    </div>
+<section class="main-content columns is-fullheight">
 
-                    <div>
-                        <br>
-                        <h1 class="title">B.E.A.N.S.</h1>
-                    </div>
-
-                </nav>
-            </section>
-        </div>
-
-        <div class="hero-body is-white">
-            <div class="container has-text-centered">
-                {% block content %}
-                {% endblock %}
+    <div id="sidebar" class="column is-2" style="background-color:grey-darker">
+        <div class="notification is-dark">
+            <div class="block">
+                <button class="button is-fullwidth">Save</button>
+            </div>
+            <div class="block">
+                <button class="button is-fullwidth">Load</button>
+            </div>
+            <div class="block">
+                <button class="button is-fullwidth">...</button>
             </div>
         </div>
-    </section>
-<section>
-    <nav class="navbar is-fixed-bottom is-white" style="align:center">
-        <div class="hero-foot" style="flex-grow: 1">
-            {% block foot %}
-            {% endblock %}
-        </div>
-    </nav>
+    </div>
+
+    <div class="container column is-10">
+        <section class="hero is-white is-fullheight">
+            <div class="hero-body is-white">
+                <div class="container has-text-centered">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </section>
+    </div>
+
 </section>
+
 </body>
 
 </html>
