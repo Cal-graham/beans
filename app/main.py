@@ -13,7 +13,7 @@ def read():
     data = []
     now = datetime.now()
     data.append(now.strftime("%S"))
-    [data.append(x) for x in site_frame.data[-1]]
+    [data.append(x) for x in site_frame.current_read]
     response = make_response(json.dumps(data))
     response.content_type = 'application/json'
     return response
