@@ -5,10 +5,13 @@
 <link rel="stylesheet" href="/static/Main/css/Main.css">
 
 <div class="columns">
-    <div class="column is-three-quarters">
-        <canvas id="lineChart"></canvas>
+    <div class="column is-four-fifths">
+        <div class="box">
+            <h1 class="subtitle">Temp Profile</h1>
+            <canvas id="lineChart"></canvas>
+        </div>
     </div>
-    <div class="column is-one-quarter">
+    <div class="column is-one-fifth">
         <canvas id="polarChart"></canvas>
     </div>
 </div>
@@ -60,8 +63,7 @@
       data: lineData,
       options: {
         title: {
-          display: true,
-          text: 'Temp Profile'
+          display: false
         },
 	elements: {
 		point : {
@@ -69,7 +71,7 @@
 		}
 	},
 	legend: {
-                display: true
+                display: false
         }
       }
     });
@@ -95,8 +97,7 @@
         animateRotate: false
       },
 	title : {
-		display : true,
-		text: 'Current Temp'
+		display : false
 	},
 	legend: {
 		display: false
@@ -139,6 +140,9 @@
     }
 
     setInterval(refresh, 500);
+
+
+
 
 </script>
 
