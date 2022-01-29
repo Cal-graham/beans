@@ -10,11 +10,10 @@ main_blueprint = Blueprint('main', __name__)
 
 @main_blueprint.route('/read', methods=['GET'])
 def read():
-    data = []; now = datetime.now()
-    data.append(now.strftime("%H:%M:%S")); [data.append(x) for x in site_frame.analog_read()]
-    #for x in range(4):
-    #    data.append(site_frame.current_read[x])
-    print(data)
+    data = []
+    now = datetime.now()
+    data.append(now.strftime("%S"))
+    [data.append(x) for x in site_frame.data[-1]]
     response = make_response(json.dumps(data))
     response.content_type = 'application/json'
     return response
