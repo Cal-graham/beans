@@ -41,46 +41,41 @@
         .menu-list :hover{
             background-color:turquoise !important;
         }
-
-
+        .columns {
+            display: flex;
+            flex-direction: row; // this is default
+            align-items: stretch; // this will stretch the children vertically
+        }
     </style>
 </head>
 
 <body>
-<nav class="navbar is-dark is-fixed-top" style="width:100%">
-    <div class="navbar-item">
-        <h1 class="title" style="color:white">B.E.A.N.S.</h1>
+<nav class="navbar is-black"></nav>
+<nav class="navbar is-black is-fixed-top" style="width:100%">
+    <div class="navbar-start">
+        <div class="navbar-item">
+            <h1 class="title" style="color:white">B.E.A.N.S.</h1>
+        </div>
     </div>
-</nav>
-<br><br>
-
-<section class="main-content columns is-fullheight">
-
-    <div id="sidebar" class="column is-2" style="background-color:grey-darker">
-        <div class="notification is-dark">
-            <div class="block">
-                <button class="button is-fullwidth">Save</button>
-            </div>
-            <div class="block">
-                <button class="button is-fullwidth">Load</button>
-            </div>
-            <div class="block">
-                <button class="button is-fullwidth">...</button>
+    <div class="navbar-end">
+        <div class="navbar-item">
+            <div class="buttons">
+                <a class="button is-primary">
+                    <strong>Save</strong>
+                </a>
+                <a class="button is-light">
+                    Load
+                </a>
             </div>
         </div>
     </div>
+</nav>
 
-    <div class="container column is-10">
-        <section class="hero is-white is-fullheight">
-            <div class="hero-body is-white">
-                <div class="container has-text-centered">
-                    {% block content %}
-                    {% endblock %}
-                </div>
-            </div>
-        </section>
-    </div>
-
+<section class="hero is-dark is-fullheight">
+    <section class="hero is-fullheight">
+        {% block content %}
+        {% endblock %}
+    </section>
 </section>
 
 </body>
