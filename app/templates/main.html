@@ -1,21 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<link rel="stylesheet" href="/static/Main/css/Main.css">
-
-<div class="columns">
-    <div class="column is-four-fifths">
-        <div class="box">
-            <h1 class="subtitle">Temp Profile</h1>
-            <canvas id="lineChart"></canvas>
+    <div class="tile is-ancestor">
+        <div class="tile is-vertical is-10" style="height:100%">
+            <canvas id="lineChart" style="width=100%;height=100%"></canvas>
+        </div>
+        <div class="tile is-vertical is-2">
+            <br>
+            <canvas id="polarChart"></canvas>
         </div>
     </div>
-    <div class="column is-one-fifth">
-        <canvas id="polarChart"></canvas>
-    </div>
-</div>
-
 <script>
 
     var lineData = {
@@ -23,33 +17,39 @@
       datasets: [{
         data: [1],
         label: "Boiler",
-	fill: false,
-	borderColor: 'rgb(255, 0, 0)'
+	    fill: true,
+	    borderColor: 'rgb(255, 0, 0)',
+	    backgroundColor: 'rgb(255, 0, 0, 0.1)'
       }, {
         data: [1],
         label: "Grouphead",
-	fill: false,
-        borderColor: 'rgb(255, 0, 50)'
+	    fill: true,
+        borderColor: 'rgb(255, 0, 150)',
+	    backgroundColor: 'rgb(255, 0, 150, 0.1)'
       }, {
         data: [1],
         label: "Ambient1",
-	fill: false,
-        borderColor: 'rgb(0, 0, 255)'
+	    fill: true,
+        borderColor: 'rgb(0, 0, 255)',
+	    backgroundColor: 'rgb(0, 0, 255, 0.1)'
       },{
         data: [1],
         label: "Ambient2",
-	fill: false,
-        borderColor: 'rgb(0, 150, 255)'
+	    fill: true,
+        borderColor: 'rgb(0, 150, 255)',
+	    backgroundColor: 'rgb(0, 150, 255, 0.1)'
       },{
         data: [1],
         label: "Ambient3",
-	fill: false,
-        borderColor: 'rgb(150, 0, 255)'
+	    fill: true,
+        borderColor: 'rgb(150, 0, 255)',
+	    backgroundColor: 'rgb(150, 0, 255, 0.1)'
       },{
         data: [1],
         label: "Ambient4",
-	fill: false,
-        borderColor: 'rgb(150, 150, 255)'
+	    fill: true,
+        borderColor: 'rgb(150, 150, 255)',
+	    backgroundColor: 'rgb(150, 150, 255, 0.1)'
       },{
 	data: [0],
 	label: "",
@@ -62,6 +62,10 @@
       type: 'line',
       data: lineData,
       options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: 40
+        },
         title: {
           display: false
         },
@@ -87,7 +91,14 @@
           "rgba(0, 150, 255, 0.6)",
           "rgba(150, 0, 255, 0.6)",
           "rgba(150, 150, 255, 0.6)"
-        ]
+        ],
+        borderColor: [
+            "rgb(0, 0, 0, 0)",
+            "rgb(0, 0, 0, 0)",
+            "rgb(0, 0, 0, 0)",
+            "rgb(0, 0, 0, 0)",
+            "rgb(0, 0, 0, 0)",
+            "rgb(0, 0, 0, 0)"]
       }]
     };
 
@@ -101,8 +112,13 @@
 	},
 	legend: {
 		display: false
-	}
+	},
+	layout: {
+          padding: 20
+        }
    };
+
+    Chart.scaleService.defaults.radialLinear.ticks.backdropColor = 'rgba(0, 0, 0, 0)';
 
     var polarAreaChart = new Chart(document.getElementById("polarChart"), {
       type: 'polarArea',
@@ -140,6 +156,12 @@
     }
 
     setInterval(refresh, 300);
+
+
+
+
+
+
 
 
 
