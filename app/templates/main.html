@@ -66,7 +66,7 @@
         pointBorderColor: chartColors.boiler1,
         pointBackgroundColor: chartColors.boiler1,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.boiler1,
         shadowBlur: 10,
@@ -79,7 +79,7 @@
         pointBorderColor: chartColors.grouphead1,
         pointBackgroundColor: chartColors.grouphead1,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.grouphead1,
         shadowBlur: 10,
@@ -92,7 +92,7 @@
         pointBorderColor: chartColors.grouphead2,
         pointBackgroundColor: chartColors.grouphead2,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.grouphead2,
         shadowBlur: 10,
@@ -105,7 +105,7 @@
         pointBorderColor: chartColors.boiler2,
         pointBackgroundColor: chartColors.boiler2,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.boiler2,
         shadowBlur: 10,
@@ -118,7 +118,7 @@
         pointBorderColor: chartColors.boiler3,
         pointBackgroundColor: chartColors.boiler3,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.boiler3,
         shadowBlur: 10,
@@ -141,7 +141,7 @@
         pointBorderColor: chartColors.pressure,
         pointBackgroundColor: chartColors.pressure,
         fill: false,
-        pointRadius: 0,
+        pointRadius: 2.5,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.pressure,
         shadowBlur: 10,
@@ -212,16 +212,15 @@
     });
 
     var polarData = {
-      labels: ["Boiler1", "GroupHead1", "GroupHead2", "Boiler2", "Boiler3", "Pressure"],
+      labels: ["Boiler1", "GroupHead1", "GroupHead2", "Boiler2", "Boiler3"],
       datasets: [{
-        data: [1, 1, 1, 1, 1, 1],
+        data: [1, 1, 1, 1, 1],
         backgroundColor: [
           polarChartColors.boiler1,
           polarChartColors.grouphead1,
           polarChartColors.grouphead2,
           polarChartColors.boiler2,
           polarChartColors.boiler3,
-          polarChartColors.pressure
         ],
         borderColor: [
           polarChartColors.boiler1,
@@ -229,7 +228,6 @@
           polarChartColors.grouphead2,
           polarChartColors.boiler2,
           polarChartColors.boiler3,
-          polarChartColors.pressure
         ],
         outerGlowWidth: 20,
         outerGlowColor: polarChartColors.effects
@@ -264,7 +262,7 @@
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 
-                polarAreaChart.data.datasets[0].data = [r[1], r[2], r[3], r[4], r[5], r[6]];
+                polarAreaChart.data.datasets[0].data = [r[1], r[2], r[3], r[4], r[5]];
                 polarAreaChart.update();
 
                 // add the point
