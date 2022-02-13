@@ -1,55 +1,141 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="tile is-ancestor">
-        <div class="tile is-vertical is-10" style="height:100%">
-            <canvas id="lineChart" style="width=100%;height=100%"></canvas>
+
+<div class="tile is-ancestor is-fullheight">
+    <div class="tile is-vertical is-12">
+        <div class="tile">
+            <div class="tile is-parent is-10">
+                <article class="tile is-child box has-background-grey-darker">
+                    <canvas id="lineChart2" style="width=100%;height=100%"></canvas>
+                </article>
+            </div>
+            <div class="tile is-parent is-2">
+                <article class="tile is-child box has-background-black">
+                    <div class="columns is-vcentered">
+                        <div class="column is-12">
+                            <br><br>
+                            <canvas id="polarChart"></canvas>
+                        </div>
+                    </div>
+                </article>
+            </div>
         </div>
-        <div class="tile is-vertical is-2">
-            <br>
-            <canvas id="polarChart"></canvas>
+        <div class="tile">
+            <div class="tile is-parent is-12">
+                <article class="tile is-child box has-background-grey-darker">
+                    <canvas id="lineChart" style="width=100%;height=100%"></canvas>
+                </article>
+            </div>
         </div>
     </div>
+</div>
+</div>
+</div>
+
 <script>
+
+    var chartColors = {
+        pressure: 'rgb(255, 255, 255)',
+        grouphead1: 'rgb(255, 0, 0)',
+        grouphead2: 'rgb(255, 100, 0)',
+        boiler2: 'rgb(100, 0, 255)',
+        boiler1: 'rgb(0, 0, 255)',
+        boiler3: 'rgb(0, 100, 255)'
+    };
+
+    var color = Chart.helpers.color;
 
     var lineData = {
       labels: ['1'],
       datasets: [{
         data: [1],
-        label: "Boiler",
-	    fill: true,
-	    borderColor: 'rgb(255, 0, 0)',
-	    backgroundColor: 'rgb(255, 0, 0, 0.1)'
+        label: "Boiler1",
+	    backgroundColor: chartColors.boiler1,
+        borderColor: chartColors.boiler1,
+        pointBorderColor: chartColors.boiler1,
+        pointBackgroundColor: chartColors.boiler1,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.boiler1,
+        shadowBlur: 10,
+        shadowColor: chartColors.boiler1
       }, {
         data: [1],
-        label: "Grouphead",
-	    fill: true,
-        borderColor: 'rgb(255, 0, 150)',
-	    backgroundColor: 'rgb(255, 0, 150, 0.1)'
+        label: "Grouphead1",
+	    backgroundColor: chartColors.grouphead1,
+        borderColor: chartColors.grouphead1,
+        pointBorderColor: chartColors.grouphead1,
+        pointBackgroundColor: chartColors.grouphead1,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.grouphead1,
+        shadowBlur: 10,
+        shadowColor: chartColors.grouphead1
       }, {
         data: [1],
-        label: "Ambient1",
-	    fill: true,
-        borderColor: 'rgb(0, 0, 255)',
-	    backgroundColor: 'rgb(0, 0, 255, 0.1)'
+        label: "Grouphead2",
+	    backgroundColor: chartColors.grouphead2,
+        borderColor: chartColors.grouphead2,
+        pointBorderColor: chartColors.grouphead2,
+        pointBackgroundColor: chartColors.grouphead2,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.grouphead2,
+        shadowBlur: 10,
+        shadowColor: chartColors.grouphead2
       },{
         data: [1],
-        label: "Ambient2",
-	    fill: true,
-        borderColor: 'rgb(0, 150, 255)',
-	    backgroundColor: 'rgb(0, 150, 255, 0.1)'
+        label: "Boiler2",
+	    backgroundColor: chartColors.boiler2,
+        borderColor: chartColors.boiler2,
+        pointBorderColor: chartColors.boiler2,
+        pointBackgroundColor: chartColors.boiler2,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.boiler2,
+        shadowBlur: 10,
+        shadowColor: chartColors.boiler2
       },{
         data: [1],
-        label: "Ambient3",
-	    fill: true,
-        borderColor: 'rgb(150, 0, 255)',
-	    backgroundColor: 'rgb(150, 0, 255, 0.1)'
+        label: "Boiler3",
+	    backgroundColor: chartColors.boiler3,
+        borderColor: chartColors.boiler3,
+        pointBorderColor: chartColors.boiler3,
+        pointBackgroundColor: chartColors.boiler3,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.boiler3,
+        shadowBlur: 10,
+        shadowColor: chartColors.boiler3
       },{
+	data: [0],
+	label: "",
+	fill: false,
+	borderColor: 'rgb(255, 0, 0)'
+	}]
+    };
+
+    var lineData2 = {
+      labels: ['1'],
+      datasets: [{
         data: [1],
-        label: "Ambient4",
-	    fill: true,
-        borderColor: 'rgb(150, 150, 255)',
-	    backgroundColor: 'rgb(150, 150, 255, 0.1)'
+        label: "Pressure",
+	    backgroundColor: chartColors.pressure,
+        borderColor: chartColors.pressure,
+        pointBorderColor: chartColors.pressure,
+        pointBackgroundColor: chartColors.pressure,
+        fill: false,
+        pointRadius: 2.5,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.pressure,
+        shadowBlur: 10,
+        shadowColor: chartColors.pressure
       },{
 	data: [0],
 	label: "",
@@ -63,8 +149,43 @@
       data: lineData,
       options: {
         maintainAspectRatio: false,
+        animation: {
+            duration: 100
+        },
         layout: {
           padding: 40
+        },
+        scales:{
+            xAxes: [{
+                display: false
+            }]
+        },
+        title: {
+          display: false
+        },
+	elements: {
+		point : {
+			radius: 0
+		}
+	},
+	legend: {
+                display: false
+        }
+      }
+    });
+
+    var lineChart2 = new Chart(document.getElementById("lineChart2"), {
+      type: 'line',
+      data: lineData2,
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: 40
+        },
+        scales:{
+            xAxes: [{
+                display: false
+            }]
         },
         title: {
           display: false
@@ -135,36 +256,31 @@
 
                 // add the point
                 lineChart.data.labels.push(r[0]);
+                lineChart2.data.labels.push(r[0]);
                 lineChart.data.datasets[0].data.push(r[1]);
                 lineChart.data.datasets[1].data.push(r[2]);
                 lineChart.data.datasets[2].data.push(r[3]);
                 lineChart.data.datasets[3].data.push(r[4]);
                 lineChart.data.datasets[4].data.push(r[5]);
-                lineChart.data.datasets[5].data.push(r[6]);
-		if (lineChart.data.labels.length > 100) {
-		lineChart.data.labels.splice(0,1);
+                lineChart2.data.datasets[0].data.push(r[6]);
+		if (lineChart.data.labels.length > 200) {
+		        lineChart.data.labels.splice(0,1);
                 lineChart.data.datasets[0].data.splice(0,1);
                 lineChart.data.datasets[1].data.splice(0,1);
                 lineChart.data.datasets[2].data.splice(0,1);
                 lineChart.data.datasets[3].data.splice(0,1);
                 lineChart.data.datasets[4].data.splice(0,1);
-                lineChart.data.datasets[5].data.splice(0,1);
 		}
-
+		if (lineChart2.data.labels.length > 100) {
+		        lineChart2.data.labels.splice(0,1);
+		        lineChart2.data.datasets[0].data.splice(0,1);
+		}
                 lineChart.update();
+                lineChart2.update();
         });
     }
 
-    setInterval(refresh, 300);
-
-
-
-
-
-
-
-
-
+    setInterval(refresh, 500);
 
 </script>
 
