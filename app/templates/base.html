@@ -23,7 +23,8 @@
 
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-style@0.5.0"></script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -50,8 +51,7 @@
 </head>
 
 <body>
-<nav class="navbar is-black"></nav>
-<nav class="navbar is-black is-fixed-top" style="width:100%">
+<nav class="navbar is-black" style="width:100%">
     <div class="navbar-start">
         <div class="navbar-item">
             <h1 class="title" style="color:white">B.E.A.N.S.</h1>
@@ -71,11 +71,9 @@
     </div>
 </nav>
 
-<section class="hero is-dark is-fullheight">
-    <section class="hero is-fullheight">
+<section class="hero is-black is-fullheight">
         {% block content %}
         {% endblock %}
-    </section>
 </section>
 
 </body>
