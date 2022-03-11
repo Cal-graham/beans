@@ -2,100 +2,90 @@ from time import sleep
 import threading
 import numpy as np
 
-
 if 1:
     import Adafruit_ADS1x15
     onRpi = 1
-    arduino = 1
 if 0:
-    print('No GPIO import')
-    arduino = 0
     onRpi = 0
 
 
 class SiteFrame:
     onRpi = onRpi
-    arduino = arduino
-    data = []
-    numthreads = 0
-    run_thread = 0
-    thread = None
+    data = {}
+    run_adc_thread = 0
+    adc_thread = None
+    adc1 = None
+    adc2 = None
     current_read = []
     read_prev = []
     read_avg = []
-    if arduino:
-        ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
-        ser.reset_input_buffer()
-        if ser.in_waiting > 0:
-            line = str(ser.readline())
+    pins1 = {
+        'gh1': 1,
+        'gh2': 2,
+        'gh3': 3,
+        'gh4': 4
+    }
+    pins2 = {
+        'br1': 1,
+        'br2': 2,
+        'br3': 3,
+        'br4': 4
+    }
 
     def init(self):
-        if self.run_thread == 0:
-            self.run_thread = 1
-            self.thread = threading.Thread(target=lambda: self.comms())
-            self.thread.start()
+        if onRpi:
+            self.adc1 = Adafruit_ADS1x15.ADS1115()
+            self.adc2 = Adafruit_ADS1x15.ADS1115(address=0x49)
+            self.GAIN = 1
+        if self.run_adc_thread == 0:
+            self.run_adc_thread = 1
+            self.adc_thread = threading.Thread(target=lambda: self.comms())
+            self.adc_thread.start()
         else:
             pass
 
     def exit(self):
-        self.run_thread = 0
-        self.thread.join()
+        self.run_adc_thread = 0
+        self.adc_thread.join()
         pass
 
     def comms(self):
-        self.numthreads += 1
-        read = []
+        read = {}
         for idx in range(10):
             read = self.analog_read()
-            self.data.append(read)
-        self.read_avg = list(np.mean(self.data, 1))
-        self.read_prev = self.read_avg
+            for key in read.keys():
+                if key in self.data.keys():
+                    self.data[key].append(read[key])
+                else:
+                    self.data[key] = [read[key]]
+        self.read_prev = read
         print(f'Starting mean values: {self.read_avg}')
         while self.run_thread:
             try:
                 self.current_read = self.analog_read()
-                for idx in range(0,len(self.current_read)):
-                    if np.abs(self.current_read[idx] - self.read_avg[idx]) > 200:
-                        self.current_read[idx] = self.read_avg[idx]
-                    else:
-                        pass #print('within range')
-                    if np.abs(self.current_read[idx] - self.read_prev[idx]) > 20:
-                        self.current_read[idx] = self.read_avg[idx]
-                #print(self.current_read, self.read_avg, self.read_prev)
-                self.data.append(self.current_read)
-                self.data.pop(0)
-                self.read_prev = self.current_read
-                if len(self.data) != 1:
-                    temp = list(np.mean(np.array(self.data), 0))
-                    self.read_avg = temp #; print(self.numthreads)
-                else:
-                    pass #print(len(self.data))
+                for key in self.current_read.keys():
+                    self.data[key].pop(0)
+                    self.data[key].append(self.current_read[key])
+                    self.read_avg[key] = np.average(self.data[key])
+                    if np.abs(self.current_read[key] - self.read_prev[key]) > 50:
+                        self.current_read[key] = self.read_prev[key]
+                    if np.abs(self.current_read[key] - self.read_avg[key]) > 100:    
+                        self.current_read[key] = self.read_avg[key]
+                    self.read_prev = self.current_read
             except Exception as e:
-                print(e); print(len(self.data))
-                pass
-
+                print(e)
 
     def analog_read(self):
-        if arduino:
-            self.ser.reset_input_buffer()
-            value = '0'
-            read = []
-            while value == '0':
-                if self.ser.in_waiting > 0:
-                    try:
-                        value = str(self.ser.readline()).replace("b'", '').replace(",\\r\\n'", '')
-                        read = [float(x) for x in value.split(',')]
-                        if len(read) < 6:
-                            value = '0'
-                            read = []
-                        for idx in range(0, 6):
-                            if read[idx] > 1023:
-                                value = '0'
-                                read = []
-                    except:
-                        value = '0'
-                sleep(0.1)
-            #self.read_prev = read
-            return read
+        result = {}
+        if onRpi:
+            for key in self.pins1.keys():
+                result[key] = self.adc1.read_adc(pins1[key], gain=self.GAIN)
+            for key in self.pins2.keys():
+                result[key] = self.adc2.read_adc(pins1[key], gain=self.GAIN) 
+            return result
         else:
-            return list(np.random.rand(6))
+            for key in self.pins1.keys():
+                result[key] = np.random.rand(1)[0]
+            for key in self.pins2.keys():
+                result[key] = np.random.rand(1)[0]
+            return result
