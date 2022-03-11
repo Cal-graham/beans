@@ -4,7 +4,7 @@ import numpy as np
 
 
 if 1:
-    import serial
+    import Adafruit_ADS1x15
     onRpi = 1
     arduino = 1
 if 0:
