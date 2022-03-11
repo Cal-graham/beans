@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, make_response
-from app import site_frame
+import site_frame
 import json
 from time import time
 from datetime import datetime
@@ -13,8 +13,8 @@ def read():
     data = []
     now = datetime.now()
     data.append(now.strftime("%S"))
-    [data.append(x) for x in site_frame.current_read]
-    response = make_response(json.dumps(data))
+    [data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
+    response = make_response(json.dumps(data)); print(data)
     response.content_type = 'application/json'
     return response
 
