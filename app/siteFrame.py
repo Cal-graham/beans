@@ -12,21 +12,21 @@ if 0:
 class SiteFrame:
     onRpi = onRpi
     data = {}
-    run_adc_thread = 1
+    run_adc_thread = 0
     adc_thread = None
     adc1 = None
     adc2 = None
-    current_read = []
-    read_prev = []
-    read_avg = []
+    current_read = {}
+    read_prev = {}
+    read_avg = {}
     pins1 = {
-        'gh1': 0,
-        'gh2': 1,
+        'temp_gh1': 0,
+        'temp_gh2': 1,
         'gh3': 2,
         'gh4': 3
     }
     pins2 = {
-        'br1': 0,
+        'pressure_br1': 0,
         'br2': 1,
         'br3': 2,
         'br4': 3
@@ -36,7 +36,7 @@ class SiteFrame:
         if onRpi:
             self.adc1 = Adafruit_ADS1x15.ADS1115()
             self.adc2 = Adafruit_ADS1x15.ADS1115(address=0x49)
-            self.GAIN = 1
+            self.GAIN = 1; print('Site Frame Initialized')
         if self.run_adc_thread == 0:
             self.run_adc_thread = 1
             self.adc_thread = threading.Thread(target=lambda: self.comms())
@@ -52,7 +52,7 @@ class SiteFrame:
     def comms(self):
         read = {}
         for idx in range(10):
-            read = self.analog_read(); #print(read)
+            read = self.read_all_pins(); #print(read)
             for key in read.keys():
                 if key in self.data.keys():
                     self.data[key].append(read[key])
@@ -62,7 +62,7 @@ class SiteFrame:
         print(f'Starting mean values: {self.read_avg}')
         while self.run_adc_thread:
             try:
-                self.current_read = self.analog_read()
+                self.current_read = self.read_all_pins()
                 for key in self.current_read.keys():
                     self.data[key].pop(0)
                     self.data[key].append(self.current_read[key])
@@ -79,10 +79,10 @@ class SiteFrame:
         result = {}
         if onRpi:
             for key in self.pins1.keys():
-                result[key] = self.adc1.read_adc(self.pins1[key], gain=self.GAIN)
+                result[key] = self.adc1.read_adc(self.pins1[key], gain=self.GAIN)/32767
             for key in self.pins2.keys():
-                result[key] = self.adc2.read_adc(self.pins2[key], gain=self.GAIN) 
-            print(result); return result
+                result[key] = self.adc2.read_adc(self.pins2[key], gain=self.GAIN)/32767
+            return result
         else:
             for key in self.pins1.keys():
                 result[key] = np.random.rand(1)[0]

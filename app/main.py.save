@@ -2,15 +2,11 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 import json
 from time import time
 from datetime import datetime
-import atexit
-from siteFrame import SiteFrame
+try:
+	impo
 
 
 main_blueprint = Blueprint('main', __name__)
-
-
-site_frame = SiteFrame()
-atexit.register(lambda: site_frame.exit())
 
 
 @main_blueprint.route('/read', methods=['GET'])

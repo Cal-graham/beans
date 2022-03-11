@@ -1,10 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, url_for
 from flask_session import Session
-from siteFrame import SiteFrame
 import atexit
-
-
-site_frame = SiteFrame()
 
 
 def create_app():
@@ -27,5 +23,4 @@ if __name__ == "__main__":
     def index():
         return render_template('main.html')
 
-    atexit.register(lambda: site_frame.exit())
     app_.run(host='0.0.0.0', port=5000, debug=True)
