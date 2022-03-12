@@ -74,7 +74,26 @@ class SiteFrame:
                     self.read_prev = self.current_read
             except Exception as e:
                 print(e)
+                
+    def read_all_pins(self):
+        result = {}
+        read = self.analog_read()
+        for key in read.keys():
+            if 'temp' in key:
+                result[key] = self.convert_temp(read[key])
+            elif 'pressure' in key:
+                result[key] = self.convert_pressure(read[key])
+            else:
+                result[key] = read[key]
+        return result
+    
+    def convert_temp(self, voltage):
+        resistance = 10**4
+        return 3950/np.log( ((1-voltage)*resistance/voltage)/(10**5*np.exp(-3950/298)) ) - 273  #Celsius
 
+    def convert_pressure(self, voltage):
+        return (voltage - 0.5)*50   #psi
+    
     def analog_read(self):
         result = {}
         if onRpi:
