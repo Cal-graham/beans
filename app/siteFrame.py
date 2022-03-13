@@ -58,8 +58,8 @@ class SiteFrame:
                     self.data[key].append(read[key])
                 else:
                     self.data[key] = [read[key]]
-        self.read_prev = read; print(self.data)
-        print(f'Starting mean values: {self.read_avg}')
+        self.read_prev = read;
+        print(f'Initial Reading: {read}')
         while self.run_adc_thread:
             try:
                 self.current_read = self.read_all_pins()
