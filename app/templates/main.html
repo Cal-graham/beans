@@ -270,17 +270,11 @@
 			if (key.includes("temp")){
 				lineChart.data.datasets[ct].data.push(value)
 				temps[ct] = value
-				ct = ct + 1
-				//if (lineChart.data.datasets[ct].data.length > 200){
-				//	lineChart.data.datasets[ct].data.splice(0,1)
-				//}					
+				ct = ct + 1				
 			}
 			if (key.includes("pressure")){
 				lineChart2.data.datasets[cp].data.push(value)
 				cp = cp + 1
-				//if (lineChart2.data.datasets[cp].data.length > 200){
-                                //        lineChart2.data.datasets[cp].data.splice(0,1)
-                                //}
 			}
 			if (key.includes("time")){
 				lineChart.data.labels.push(value)
@@ -292,7 +286,7 @@
                                                 dataset.data.shift();
                                         });
 				}
-				if (lineChart2.data.labels.length > 20){
+				if (lineChart2.data.labels.length > 200){
                                         lineChart2.data.labels.pop();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
@@ -308,7 +302,7 @@
         });
     }
 
-    setInterval(refresh, 200);
+    setInterval(refresh, 500);
 
 </script>
 
