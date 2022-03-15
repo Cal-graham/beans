@@ -13,16 +13,16 @@ if 0:
 
 class SiteFrame:
     onRpi = onRpi
+    reading_limit = 200
     raw_data = {}
     real_data = {}
     time_data = {}
     filter_data = {}
     run_adc_thread = 0
+    run_smoothing_thread = 0
     adc_thread = None
+    smoothing_thread = None
     adc = []
-    current_read = {}
-    read_prev = {}
-    read_avg = {}
     pins = {
         'pressure_br': '1.0',
         'temp_gh': '1.1',
@@ -45,10 +45,11 @@ class SiteFrame:
             self.run_adc_thread = 1
             self.adc_thread = threading.Thread(target=lambda: self.comms())
             self.adc_thread.start()
-            sleep(5)
-            print('Initialized')
-        else:
-            pass
+        if self.run_smoothing_thread == 0:
+            self.run_smoothing_thread = 1
+            self.smoothing_thread = threading.Thread(target=lambda: self.smooth())
+        sleep(1)
+        print('Initialized')
 
     def exit(self):
         self.run_adc_thread = 0
@@ -59,7 +60,8 @@ class SiteFrame:
         self.pull_readings(4)
         while self.run_adc_thread:
             self.pull_readings(0.5)
-            print('readings:',len(self.raw_data['temp_br'])); self.limit_datapoints(200)
+            print('readings:',len(self.raw_data['temp_br']))
+            self.limit_datapoints(self.reading_limit)
 
     def limit_datapoints(self, max):
         for key in self.pins.keys():
@@ -68,31 +70,36 @@ class SiteFrame:
                 self.time_data[key].pop(0)
 
     def pull_readings(self, seconds):
-        atime = seconds/len(self.pins.keys()); # print('read data')
+        atime = seconds/len(self.pins.keys())
         for key in self.pins.keys():
             start = int(time())
             controller = self.adc[int(self.pins[key].split('.')[0])]
             pin = int(self.pins[key].split('.')[1])
-            controller.start_adc(pin, gain=self.GAIN) #; loop = 0
+            controller.start_adc(pin, gain=self.GAIN)
             while time() - start < atime:
                 self.raw_data[key].append(float(controller.get_last_result()/32767))
-                self.time_data[key].append(float(time()%60)) # ; loop = loop + 1; print('Loops:', loop)
+                self.time_data[key].append(float(time()%60))
             controller.stop_adc()
 
+    def smooth(self):
+        while self.run_smoothing_thread:
+            self.update_data()
+            for key in self.pins.keys():
+                self.filter_data[key] = np.average(self.real_data[key])
+            
     def update_data(self):
         for key in self.pins.keys():
             if 'temp' in key:
-                self.real_data[key] = self.convert_temp(self.raw_data[key].copy())
-                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
+                self.real_data[key] = self.convert_temp(self.raw_data[key][0:self.reading_limit].copy())
+                self.real_data[f'{key}_time'] = self.time_data[key][0:self.reading_limit].copy()
             elif 'pressure' in key:
-                self.real_data[key] = self.convert_pressure(self.raw_data[key].copy())
-                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
+                self.real_data[key] = self.convert_pressure(self.raw_data[key][0:self.reading_limit].copy())
+                self.real_data[f'{key}_time'] = self.time_data[key][0:self.reading_limit].copy()
             else:
-                self.real_data[key] = self.raw_data[key].copy()
-                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
+                self.real_data[key] = self.raw_data[key][0:self.reading_limit].copy()
+                self.real_data[f'{key}_time'] = self.time_data[key][0:self.reading_limit].copy()
 
-    def smoothing(self):
-        self.update_data()
+    def smooth_data(self):
         for key in self.pins.keys():
             '''ind = 0
             weight = []
@@ -107,10 +114,11 @@ class SiteFrame:
             #self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
 
     def pull_points(self):
-        self.smoothing(); # print('smoothed data')
+        self.update_data()
+        self.smooth_data()
         results = {}
         for key in self.pins.keys():
-            results[key] = self.filter_data[key] #list(self.filter_data[key][-1])[0]
+            results[key] = self.filter_data[key]
         return results
 
     def convert_temp(self, read):
