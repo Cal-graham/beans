@@ -94,15 +94,23 @@ class SiteFrame:
     def smoothing(self):
         self.update_data(); print('updated data')
         for key in self.pins.keys():
+            ind = 0
+            weight = []
+            for idx in range(len(self.real_data[f'{key}_time'])):
+                if self.real_data[f'{key}_time'][idx] > self.real_data[f'{key}_time'][0] and ind == 0:
+                    weight[idx] = self.real_data[f'{key}_time'][idx] - self.real_data[f'{key}_time'][0]
+                else:
+                    weight[idx] = self.real_data[f'{key}_time'][idx] - self.real_data[f'{key}_time'][0] + 60
+                    ind = 1
             print(len(self.real_data[key]),len(self.real_data[f'{key}_time']))
-            self.filter_data[key] = np.sum( np.multiply(self.real_data[key], ) )
-            self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
+            self.filter_data[key] = np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
+            #self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
 
     def pull_points(self):
         self.smoothing(); print('smoothed data')
         results = {}
         for key in self.pins.keys():
-            print(list(self.filter_data[key][-1])); results[key] = list(self.filter_data[key][-1])[0]
+            print(list(self.filter_data[key])); results[key] = self.filter_data[key] #list(self.filter_data[key][-1])[0]
         print(results); return results
 
     def convert_temp(self, read):
