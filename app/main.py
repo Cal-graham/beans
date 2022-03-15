@@ -16,7 +16,7 @@ atexit.register(lambda: site_frame.exit())
 
 @main_blueprint.route('/read', methods=['GET'])
 def read():
-    data = site_frame.read_all_pins() #[]
+    data = site_frame.pull_points() #[]
     now = datetime.now()
     data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
     #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
