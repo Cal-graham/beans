@@ -96,11 +96,12 @@ class SiteFrame:
     
     def analog_read(self):
         result = {}
+        self.atime = 0.05
         if onRpi:
             for key in self.pins1.keys():
-                result[key] = np.average([self.adc1.read_adc(self.pins1[key], gain=self.GAIN)/32767 for x in range(10)])
+                result[key] = self.averaged_read(self.adc1, self.pins1[key]) #np.average([self.adc1.read_adc(self.pins1[key], gain=self.GAIN)/32767 for x in range(10)])
             for key in self.pins2.keys():
-                result[key] = np.average([self.adc2.read_adc(self.pins2[key], gain=self.GAIN)/32767 for x in range(10)])
+                result[key] = self.averaged_read(self.adc2, self.pins2[key]) #np.average([self.adc2.read_adc(self.pins2[key], gain=self.GAIN)/32767 for x in range(10)])
             return result
         else:
             for key in self.pins1.keys():
@@ -109,3 +110,14 @@ class SiteFrame:
                 result[key] = np.random.rand(1)[0]
             return result
 
+    def averaged_read(adc, pin):
+        start = time.time()
+        adc.start_adc(pin, gain=self.GAIN)
+        val = []
+        while start - time.time() < self.atime:
+            val.append(adc.get_last_result)
+        print(val)
+        adc.stop_adc()
+        return np.average(val)
+        
+       
