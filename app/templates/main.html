@@ -286,15 +286,14 @@
 			if (key.includes("time")){
 				lineChart.data.labels.push(value)
 				lineChart2.data.labels.push(value)
-				if (lineChart.data.labels.length > 200){
-					lineChart.data.labels.pop();
-					lineChart.data.labels.pop();
+				if (lineChart.data.labels.length > 400){
+					lineChart.data.labels.shift();
                                         lineChart.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
 				}
-				if (lineChart2.data.labels.length > 200){
-                                        lineChart2.data.labels.pop();
+				if (lineChart2.data.labels.length > 400){
+                                        lineChart2.data.labels.shift();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
 					});
@@ -306,12 +305,17 @@
                 polarAreaChart.update();
                 lineChart.update();
                 lineChart2.update();
-	//refresh();
+	sleep(100);
+	refresh();
         });
     }
 
-    //refresh();
-    setInterval(refresh, 500);
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    refresh();
+    //setInterval(refresh, 200);
 
 </script>
 

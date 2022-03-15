@@ -13,7 +13,7 @@ if 0:
 
 class SiteFrame:
     onRpi = onRpi
-    reading_limit = 200
+    reading_limit = 50
     raw_data = {}
     real_data = {}
     time_data = {}
@@ -48,6 +48,7 @@ class SiteFrame:
         if self.run_smoothing_thread == 0:
             self.run_smoothing_thread = 1
             self.smoothing_thread = threading.Thread(target=lambda: self.smooth())
+            self.smoothing_thread.start()
         sleep(1)
         print('Initialized')
 
@@ -59,8 +60,8 @@ class SiteFrame:
     def comms(self):
         self.pull_readings(4)
         while self.run_adc_thread:
-            self.pull_readings(0.5)
-            print('readings:',len(self.raw_data['temp_br']))
+            self.pull_readings(0.1)
+            #print('readings:',len(self.raw_data['temp_br']))
             self.limit_datapoints(self.reading_limit)
 
     def limit_datapoints(self, max):
@@ -72,21 +73,21 @@ class SiteFrame:
     def pull_readings(self, seconds):
         atime = seconds/len(self.pins.keys())
         for key in self.pins.keys():
-            start = int(time())
             controller = self.adc[int(self.pins[key].split('.')[0])]
             pin = int(self.pins[key].split('.')[1])
-            controller.start_adc(pin, gain=self.GAIN)
+            controller.start_adc(pin, gain=self.GAIN) #; count = 0
+            start = time()
             while time() - start < atime:
                 self.raw_data[key].append(float(controller.get_last_result()/32767))
-                self.time_data[key].append(float(time()%60))
-            controller.stop_adc()
+                self.time_data[key].append(float(time()%60)) #; count = count + 1
+            controller.stop_adc() #; print('Updated ', key, count)
 
     def smooth(self):
         while self.run_smoothing_thread:
             self.update_data()
             for key in self.pins.keys():
                 self.filter_data[key] = np.average(self.real_data[key])
-            
+
     def update_data(self):
         for key in self.pins.keys():
             if 'temp' in key:
@@ -109,9 +110,10 @@ class SiteFrame:
                 else:
                     weight.append((value - self.real_data[f'{key}_time'][0] + 60)/60)
                     ind = 1'''
-            #print(self.raw_data['temp_br'][-1], self.real_data['temp_br'][-1], np.sum(weight))
-            self.filter_data[key] = np.average(self.real_data[key]) #np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
-            #self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
+            weight = np.exp(np.linspace(0, 1, 100))
+            #self.filter_data[key] = np.average( self.real_data[key] ) #np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
+            self.filter_data[key] = np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
+            #sel#self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
 
     def pull_points(self):
         self.update_data()
