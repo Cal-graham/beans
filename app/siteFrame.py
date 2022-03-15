@@ -58,17 +58,17 @@ class SiteFrame:
     def comms(self):
         self.pull_readings(4)
         while self.run_adc_thread:
-            self.pull_readings(0.5)
-            self.limit_datapoints(2000)
+            self.pull_readings(0.1); sleep(0.1)
+            self.limit_datapoints(200)
 
     def limit_datapoints(self, max):
         for key in self.pins.keys():
             if len(self.raw_data[key]) > max:
                 del self.raw_data[key][0:len(self.raw_data[key])-max]
                 del self.time_data[key][0:len(self.raw_data[key])-max]
-                
+
     def pull_readings(self, seconds):
-        atime = seconds/len(self.pins.keys())
+        atime = seconds/len(self.pins.keys()); print('read data')
         for key in self.pins.keys():
             start = int(time())
             controller = self.adc[int(self.pins[key].split('.')[0])]
@@ -78,40 +78,42 @@ class SiteFrame:
                 self.raw_data[key].append(float(controller.get_last_result()/32767))
                 self.time_data[key].append(float(time()%60))
             controller.stop_adc()
-           
+
     def update_data(self):
         for key in self.pins.keys():
             if 'temp' in key:
                 self.real_data[key] = self.convert_temp(self.raw_data[key].copy())
-                self.real_data[f'{key}_time'] = self.time_data[key].copy()
+                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
             if 'pressure' in key:
                 self.real_data[key] = self.convert_pressure(self.raw_data[key].copy())
-                self.real_data[f'{key}_time'] = self.time_data[key].copy()
+                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
             else:
                 self.real_data[key] = self.raw_data[key].copy()
-                self.real_data[f'{key}_time'] = self.time_data[key].copy()
-   
+                self.real_data[f'{key}_time'] = self.time_data[key][0:len(self.real_data[key])].copy()
+
     def smoothing(self):
-        self.update_data()
+        self.update_data(); print('updated data')
         for key in self.pins.keys():
+            print(len(self.real_data[key]),len(self.real_data[f'{key}_time']))
+            self.filter_data[key] = np.sum( np.multiply(self.real_data[key], ) )
             self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
-   
+
     def pull_points(self):
-        self.smoothing()
+        self.smoothing(); print('smoothed data')
         results = {}
         for key in self.pins.keys():
-            results[key] = self.filter_data[key][-1]
-        results['time'] = self.time_data['pressure_br']
-    
+            print(list(self.filter_data[key][-1])); results[key] = list(self.filter_data[key][-1])[0]
+        print(results); return results
+
     def convert_temp(self, read):
         result = []
         for value in read:
-            result.append(3950/np.log( ((1-read)*10**4/read)/(10**5*np.exp(-3950/298)) ) - 273)
+            result.append(3950/np.log( ((1-value)*10**4/value)/(10**5*np.exp(-3950/298)) ) - 273)
         return result
 
     def convert_pressure(self, read):
         result = []
         for value in read:
-            result.append((read*4.092 - 0.5)*50)
+            result.append((value*4.092 - 0.5)*50)
         return result
-    
+
