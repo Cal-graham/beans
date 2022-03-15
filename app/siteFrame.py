@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, time
 import threading
 import numpy as np
 from statsmodels.nonparametric.smoothers_lowess import lowess
@@ -24,17 +24,11 @@ class SiteFrame:
     read_prev = {}
     read_avg = {}
     pins = {
-        'pressure_br': '2.0',
-        'temp_gh': '2.1',
-        'temp_br': '2.2',
+        'pressure_br': '1.0',
+        'temp_gh': '1.1',
+        'temp_br': '1.2',
         #'gh4': 3
     }
-    '''pins1 = {
-        #'br1': 0,
-        #'br2': 1,
-        #'br3': 2,
-        #'br4': 3
-    }'''
 
     def __init__(self):
         if onRpi:
@@ -97,33 +91,33 @@ class SiteFrame:
     def limit_datapoints(self, max):
         for key in self.pins.keys():
             if len(self.raw_data[key]) > max:
-                del self.raw_data[key][0:len(self.raw_data[key])-max]
+                del self.raw_data[key][0:len(self.raw_data[key])-max]; del self.time_data[key][0:len(self.raw_data[key])-max]
                 
     def pull_readings(self, seconds):
         atime = seconds/len(self.pins.keys())
         for key in self.pins.keys():
-            start = time()
-            controller = self.adc[self.pins[key].split('.')[0]]
-            pin = self.pins[key].split('.')[1]
+            start = int(time())
+            controller = self.adc[int(self.pins[key].split('.')[0])]
+            pin = int(self.pins[key].split('.')[1])
             controller.start_adc(pin, gain=self.GAIN)
-            while time() - start < atime:
-                self.raw_data[key].append(controller.get_last_result())
-                self.time_data[key].append(time(int(time()%60)))
+            while int(time()) - start < atime:
+                self.raw_data[key].append(float(controller.get_last_result()/32767))
+                self.time_data[key].append(float(time()%60))
             controller.stop_adc()
            
     def update_data(self):
         for key in self.pins.keys():
             if 'temp' in key:
-                self.real_data[key] = self.convert_temp(self.raw_data[key])
+                self.real_data[key] = self.convert_temp(self.raw_data[key].copy()); self.real_data[f'{key}_time'] = self.time_data[key].copy()
             if 'pressure' in key:
-                self.real_data[key] = self.convert_pressure(self.raw_data[key])
+                self.real_data[key] = self.convert_pressure(self.raw_data[key].copy()); self.real_data[f'{key}_time'] = self.time_data[key].copy()
             else:
-                self.real_data[key] = self.raw_data[key]
+                self.real_data[key] = self.raw_data[key].copy(); self.real_data[f'{key}_time'] = self.time_data[key].copy()
    
     def smoothing(self):
         self.update_data()
         for key in self.pins.keys():
-            self.filter_data[key] = lowess(self.real_data[key], self.time_data[key], frac=0.4)
+            self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
    
     def pull_points(self):
         self.smoothing()
@@ -145,10 +139,10 @@ class SiteFrame:
         return result
     
     def convert_temp(self, read):
-        return 3950/np.log( ((1-read)*10**4/(read))/(10**5*np.exp(-3950/298)) ) - 273  #Celsius
+        return 3950/np.log( np.divide( np.divide( np.multiply( np.add(read, -1), 10**4), (read) ), 10**5*np.exp(-3950/298) ) ) - 273  #Celsius
 
     def convert_pressure(self, read):
-        return (read*4.092 - 0.5)*50   #psi
+        return np.multiply( np.subtract( np.multiply(read, 4.092), 0.5), 50)   #psi
     
     def analog_read(self):
         result = {}
