@@ -159,16 +159,19 @@
       data: lineData,
       options: {
         maintainAspectRatio: false,
-        animation: {
-            duration: 100
-        },
+        animation: false,
         layout: {
           padding: 40
         },
         scales:{
             xAxes: [{
                 display: true
-            }]
+            }],
+	    y: {
+                type: 'linear',
+                min: 0,
+                max: 200
+            }
         },
         title: {
           display: false
@@ -188,6 +191,7 @@
       type: 'line',
       data: lineData2,
       options: {
+	animation: false,
         maintainAspectRatio: false,
         layout: {
           padding: 40
@@ -195,8 +199,13 @@
         scales:{
             xAxes: [{
                 display: false
-            }]
-        },
+            }],
+            y: {
+                type: 'linear',
+                min: 0,
+                max: 200
+            }
+	},
         title: {
           display: false
         },
@@ -236,9 +245,7 @@
 
     var polarChartOptions = {
       startAngle: -Math.PI / 4,
-      animation: {
-        animateRotate: false
-      },
+      animation: false,
 	title : {
 		display : false
 	},
@@ -299,10 +306,12 @@
                 polarAreaChart.update();
                 lineChart.update();
                 lineChart2.update();
+	//refresh();
         });
     }
 
-    setInterval(refresh, 1000);
+    //refresh();
+    setInterval(refresh, 500);
 
 </script>
 
