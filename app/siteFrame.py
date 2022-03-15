@@ -19,14 +19,14 @@ class SiteFrame:
     current_read = {}
     read_prev = {}
     read_avg = {}
-    pins1 = {
-        'temp_gh1': 0,
-        'temp_gh2': 1,
-        'gh3': 2,
+    pins2 = {
+        'pressure_br': 0,
+        'temp_gh': 1,
+        'temp_br': 2,
         'gh4': 3
     }
-    pins2 = {
-        'pressure_br1': 0,
+    pins1 = {
+        'br1': 0,
         'br2': 1,
         'br3': 2,
         'br4': 3
@@ -58,20 +58,21 @@ class SiteFrame:
                     self.data[key].append(read[key])
                 else:
                     self.data[key] = [read[key]]
-        self.read_prev = read;
+        self.current_read = read; self.read_prev = read;
         print(f'Initial Reading: {read}')
         while self.run_adc_thread:
             try:
-                self.current_read = self.read_all_pins()
-                for key in self.current_read.keys():
+                read = self.read_all_pins()
+                for key in read.keys():
                     self.data[key].pop(0)
-                    self.data[key].append(self.current_read[key])
+                    self.data[key].append(read[key])
                     self.read_avg[key] = np.average(self.data[key])
-                    if np.abs(self.current_read[key] - self.read_prev[key]) > 50:
-                        self.current_read[key] = self.read_prev[key]
-                    if np.abs(self.current_read[key] - self.read_avg[key]) > 100:    
-                        self.current_read[key] = self.read_avg[key]
-                    self.read_prev = self.current_read
+                    if np.abs(read[key] - self.read_prev[key]) > 5:
+                        read[key] = self.read_prev[key]
+                    elif np.abs(read[key] - self.read_avg[key]) > 20:    
+                        read[key] = self.read_avg[key]
+                self.current_read = read
+                self.read_prev = self.current_read
             except Exception as e:
                 print(e)
                 
@@ -87,20 +88,19 @@ class SiteFrame:
                 result[key] = read[key]
         return result
     
-    def convert_temp(self, voltage):
-        resistance = 10**4
-        return 3950/np.log( ((1-voltage)*resistance/voltage)/(10**5*np.exp(-3950/298)) ) - 273  #Celsius
+    def convert_temp(self, read):
+        return 3950/np.log( ((1-read)*10**4/(read))/(10**5*np.exp(-3950/298)) ) - 273  #Celsius
 
-    def convert_pressure(self, voltage):
-        return (voltage - 0.5)*50   #psi
+    def convert_pressure(self, read):
+        return (read*4.092 - 0.5)*50   #psi
     
     def analog_read(self):
         result = {}
         if onRpi:
             for key in self.pins1.keys():
-                result[key] = self.adc1.read_adc(self.pins1[key], gain=self.GAIN)/32767
+                result[key] = np.average([self.adc1.read_adc(self.pins1[key], gain=self.GAIN)/32767 for x in range(10)])
             for key in self.pins2.keys():
-                result[key] = self.adc2.read_adc(self.pins2[key], gain=self.GAIN)/32767
+                result[key] = np.average([self.adc2.read_adc(self.pins2[key], gain=self.GAIN)/32767 for x in range(10)])
             return result
         else:
             for key in self.pins1.keys():
@@ -108,3 +108,4 @@ class SiteFrame:
             for key in self.pins2.keys():
                 result[key] = np.random.rand(1)[0]
             return result
+
