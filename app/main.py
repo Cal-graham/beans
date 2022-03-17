@@ -20,7 +20,7 @@ def read():
     now = datetime.now()
     data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
     #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
-    response = make_response(json.dumps(data)) #; print(data)
+    response = make_response(json.dumps(data)); print(data)
     response.content_type = 'application/json'
     return response
 

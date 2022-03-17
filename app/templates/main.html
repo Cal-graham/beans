@@ -2,7 +2,8 @@
 
 {% block content %}
 
-<div class='rows'>
+<div class='rows is-fullheight' style="width=100%;height=95%">
+<div class='box is-fullheight has-background-grey-darker'  style="width=100%;height=95%">
 	<div class='row is-full'> 
 		<canvas id="lineChart0" style="width=100%;height=100%"></canvas>
 	</div>
@@ -12,6 +13,7 @@
 	<div class='row is-full'>
 		<canvas id="lineChart2" style="width=100%;height=100%"></canvas>
 	</div>
+</div>
 </div>
 
 <script>
@@ -26,15 +28,25 @@
 	
     var zeroDataSet = {
 	data: [0],
-	label: "",
-	fill: false,
-	borderColor: 'rgb(255, 0, 0)'
+        label: "template",
+	backgroundColor: chartColors.pressure,
+        borderColor: chartColors.pressure,
+        pointBorderColor: chartColors.pressure,
+        pointBackgroundColor: chartColors.pressure,
+        fill: false,
+        pointRadius: 0,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.pressure,
+        shadowBlur: 10,
+        shadowColor: chartColors.pressure
     };
 	    
     var baselineData = {
       labels: [''],
       datasets: [
-	zeroDataSet
+	$.extend( true, {}, zeroDataSet),
+	$.extend( true, {}, zeroDataSet),
+	$.extend( true, {}, zeroDataSet),
 	]
     };
 	
@@ -42,15 +54,20 @@
         maintainAspectRatio: false,
         animation: false,
         layout: {
-          padding: 40
+            padding:{
+		left: 0,
+		right: 0,
+		top: -15,
+		bottom: -15
+	    }
         },
         scales:{
             xAxes: [{
-                display: true
+                display: false
             }],
         },
         title: {
-          display: false
+          display: true
         },
 	elements: {
 		point : {
@@ -64,19 +81,19 @@
 
     var lineChart0 = new Chart(document.getElementById("lineChart0"), {
       type: 'line',
-      data: baselineData,
+      data: $.extend( true, {}, baselineData),
       options: lineOptions,
     });
 
     var lineChart1 = new Chart(document.getElementById("lineChart1"), {
       type: 'line',
-      data: baselineData,
+      data: $.extend( true, {}, baselineData),
       options: lineOptions,
     });
 	
     var lineChart2 = new Chart(document.getElementById("lineChart2"), {
       type: 'line',
-      data: baselineData,
+      data: $.extend( true, {}, baselineData),
       options: lineOptions,
     });
 
@@ -91,6 +108,7 @@
 			if (key.includes("temp")){
 				lineChart0.data.datasets[ct].data.push(value)
 				ct = ct + 1				
+				console.log(key, lineChart0.data.datasets[ct-1].data)
 			}
 			if (key.includes("pressure")){
 				lineChart1.data.datasets[cp].data.push(value)
@@ -109,21 +127,21 @@
                                         lineChart0.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
-					lineChart0.data.datasets[0].push(0)
+					lineChart0.data.datasets[0].data.push(0)
 				}
 				if (lineChart1.data.labels.length > 400){
 					lineChart1.data.labels.shift();
                                         lineChart1.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
-					lineChart1.data.datasets[0].push(0)
+					lineChart1.data.datasets[0].data.push(0)
 				}
 				if (lineChart2.data.labels.length > 400){
                                         lineChart2.data.labels.shift();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
 					});
-					lineChart2.data.datasets[0].push(0)
+					lineChart2.data.datasets[0].data.push(0)
                                 }
 			}
 
@@ -141,62 +159,63 @@
         var tm = requests.done(function(r){
 
 		ct = 1; cp = 1;	cf = 1;
+		color = 'rgb(255,255,255)'
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
 			
 			if (key.includes("temp")){
-				add = zeroDataSet
-				add.label: key,
+				add = $.extend( true, {}, zeroDataSet),
+				add.label = key
 				if (key.includes("boiler")){
 					color = chartColors.boiler[ct]
 				} else {
 					color = chartColors.grouphead[ct]
 				}
-				add.backgroundColor: color,
-				add.borderColor: color,
-				add.pointBorderColor: color,
-				add.pointBackgroundColor: color,
-				add.fill: false,
-				add.pointRadius: 0,
-				add.outerGlowWidth: 40,
-				add.outerGlowColor: color,
-				add.shadowBlur: 10,
-				add.shadowColor: color,
-				lineChart0.data.datasets.push(add)
+				add.backgroundColor = color
+				add.borderColor = color
+				add.pointBorderColor = color
+				add.pointBackgroundColor = color
+				add.fill = false
+				add.pointRadius = 0
+				add.outerGlowWidth = 40
+				add.outerGlowColor = color
+				add.shadowBlur = 10
+				add.shadowColor = color
+				lineChart0.data.datasets[ct] = (add)
 				ct = ct + 1				
 			}
 			if (key.includes("pressure")){
-				add = zeroDataSet
-				add.label: key,
-				color = chartColors.pressure,
-				add.backgroundColor: color,
-				add.borderColor: color,
-				add.pointBorderColor: color,
-				add.pointBackgroundColor: color,
-				add.fill: false,
-				add.pointRadius: 0,
-				add.outerGlowWidth: 40,
-				add.outerGlowColor: color,
-				add.shadowBlur: 10,
-				add.shadowColor: color,
-				lineChart1.data.datasets.push(add)
+				add = $.extend( true, {}, zeroDataSet),
+				add.label = key
+				color = chartColors.pressure
+				add.backgroundColor = color
+				add.borderColor = color
+				add.pointBorderColor = color
+				add.pointBackgroundColor = color
+				add.fill = false
+				add.pointRadius = 0
+				add.outerGlowWidth = 40
+				add.outerGlowColor = color
+				add.shadowBlur = 10
+				add.shadowColor = color
+				lineChart1.data.datasets[cp] = add
 				cp = cp + 1
 			}
 			if (key.includes("flow")){
-				add = zeroDataSet
-				add.label: key,
-				color = chartColors.pressure,
-				add.backgroundColor: color,
-				add.borderColor: color,
-				add.pointBorderColor: color,
-				add.pointBackgroundColor: color,
-				add.fill: false,
-				add.pointRadius: 0,
-				add.outerGlowWidth: 40,
-				add.outerGlowColor: color,
-				add.shadowBlur: 10,
-				add.shadowColor: color,
-				lineChart2.data.datasets[cf].data.push(value)
+				add = $.extend( true, {}, zeroDataSet),
+				add.label = key
+				color = chartColors.pressure
+				add.backgroundColor = color
+				add.borderColor = color
+				add.pointBorderColor = color
+				add.pointBackgroundColor = color
+				add.fill = false
+				add.pointRadius = 0
+				add.outerGlowWidth = 40
+				add.outerGlowColor = color
+				add.shadowBlur = 10
+				add.shadowColor = color
+				lineChart2.data.datasets[cf] = add
 				cf = cf + 1
 			}
 		}
