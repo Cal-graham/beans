@@ -2,162 +2,43 @@
 
 {% block content %}
 
-<div class="tile is-ancestor is-fullheight">
-    <div class="tile is-vertical is-12">
-        <div class="tile">
-            <div class="tile is-parent is-9">
-                <article class="tile is-child box has-background-grey-darker">
-                    <canvas id="lineChart2" style="width=100%;height=100%"></canvas>
-                </article>
-            </div>
-            <div class="tile is-parent is-3">
-                <article class="tile is-child box has-background-black">
-                    <div class="columns is-vcentered">
-                        <div class="column is-12">
-                            <br><br>
-                            <canvas id="polarChart"></canvas>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="tile">
-            <div class="tile is-parent is-12">
-                <article class="tile is-child box has-background-grey-darker">
-                    <canvas id="lineChart" style="width=100%;height=100%"></canvas>
-                </article>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
+<div class='rows'>
+	<div class='row is-full'> 
+		<canvas id="lineChart0" style="width=100%;height=100%"></canvas>
+	</div>
+	<div class='row is-full'> 
+		<canvas id="lineChart1" style="width=100%;height=100%"></canvas>
+	</div>
+	<div class='row is-full'>
+		<canvas id="lineChart2" style="width=100%;height=100%"></canvas>
+	</div>
 </div>
 
 <script>
 
     var chartColors = {
         pressure: 'rgb(255, 255, 255)',
-        grouphead1: 'rgb(255, 0, 0)',
-        grouphead2: 'rgb(255, 100, 0)',
-        boiler2: 'rgb(100, 0, 255)',
-        boiler1: 'rgb(0, 0, 255)',
-        boiler3: 'rgb(0, 100, 255)'
-    };
-
-    var polarChartColors = {
-        pressure: 'rgba(255, 255, 255, 0.5)',
-        grouphead1: 'rgba(255, 0, 0, 0.5)',
-        grouphead2: 'rgba(255, 100, 0, 0.5)',
-        boiler2: 'rgba(100, 0, 255, 0.5)',
-        boiler1: 'rgba(0, 0, 255, 0.5)',
-        boiler3: 'rgba(0, 100, 255, 0.5)',
-        effects: 'rgba(255, 255, 255, 0.5)'
+        grouphead: ['rgb(255, 0, 0)', 'rgb(255, 100, 0)', 'rgb(255, 0, 100)'],
+        boiler: ['rgb(100, 0, 255)', 'rgb(0, 0, 255)', 'rgb(0, 100, 255)']
     };
 
     var color = Chart.helpers.color;
-
-    var lineData = {
-      labels: ['1'],
-      datasets: [{
-        data: [],
-        label: "Boiler1",
-	    backgroundColor: chartColors.boiler1,
-        borderColor: chartColors.boiler1,
-        pointBorderColor: chartColors.boiler1,
-        pointBackgroundColor: chartColors.boiler1,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.boiler1,
-        shadowBlur: 10,
-        shadowColor: chartColors.boiler1
-      }, {
-        data: [],
-        label: "Grouphead1",
-	    backgroundColor: chartColors.grouphead1,
-        borderColor: chartColors.grouphead1,
-        pointBorderColor: chartColors.grouphead1,
-        pointBackgroundColor: chartColors.grouphead1,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.grouphead1,
-        shadowBlur: 10,
-        shadowColor: chartColors.grouphead1
-      }, {
-        data: [],
-        label: "Grouphead2",
-	    backgroundColor: chartColors.grouphead2,
-        borderColor: chartColors.grouphead2,
-        pointBorderColor: chartColors.grouphead2,
-        pointBackgroundColor: chartColors.grouphead2,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.grouphead2,
-        shadowBlur: 10,
-        shadowColor: chartColors.grouphead2
-      },{
-        data: [],
-        label: "Boiler2",
-	    backgroundColor: chartColors.boiler2,
-        borderColor: chartColors.boiler2,
-        pointBorderColor: chartColors.boiler2,
-        pointBackgroundColor: chartColors.boiler2,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.boiler2,
-        shadowBlur: 10,
-        shadowColor: chartColors.boiler2
-      },{
-        data: [],
-        label: "Boiler3",
-	    backgroundColor: chartColors.boiler3,
-        borderColor: chartColors.boiler3,
-        pointBorderColor: chartColors.boiler3,
-        pointBackgroundColor: chartColors.boiler3,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.boiler3,
-        shadowBlur: 10,
-        shadowColor: chartColors.boiler3
-      },{
+	
+    var zeroDataSet = {
 	data: [0],
 	label: "",
 	fill: false,
 	borderColor: 'rgb(255, 0, 0)'
-	}]
     };
-
-    var lineData2 = {
-      labels: ['1'],
-      datasets: [{
-        data: [],
-        label: "Pressure",
-	    backgroundColor: chartColors.pressure,
-        borderColor: chartColors.pressure,
-        pointBorderColor: chartColors.pressure,
-        pointBackgroundColor: chartColors.pressure,
-        fill: false,
-        pointRadius: 0,
-        outerGlowWidth: 40,
-        outerGlowColor: chartColors.pressure,
-        shadowBlur: 10,
-        shadowColor: chartColors.pressure
-      },{
-	data: [0],
-	label: "",
-	fill: false,
-	borderColor: 'rgb(255, 0, 0)'
-	}]
+	    
+    var baselineData = {
+      labels: [''],
+      datasets: [
+	zeroDataSet
+	]
     };
-
-    var lineChart = new Chart(document.getElementById("lineChart"), {
-      type: 'line',
-      data: lineData,
-      options: {
+	
+    var lineOptions = {
         maintainAspectRatio: false,
         animation: false,
         layout: {
@@ -167,11 +48,6 @@
             xAxes: [{
                 display: true
             }],
-	    y: {
-                type: 'linear',
-                min: 0,
-                max: 200
-            }
         },
         title: {
           display: false
@@ -185,128 +61,149 @@
                 display: false
         }
       }
+
+    var lineChart0 = new Chart(document.getElementById("lineChart0"), {
+      type: 'line',
+      data: baselineData,
+      options: lineOptions,
     });
 
+    var lineChart1 = new Chart(document.getElementById("lineChart1"), {
+      type: 'line',
+      data: baselineData,
+      options: lineOptions,
+    });
+	
     var lineChart2 = new Chart(document.getElementById("lineChart2"), {
       type: 'line',
-      data: lineData2,
-      options: {
-	animation: false,
-        maintainAspectRatio: false,
-        layout: {
-          padding: 40
-        },
-        scales:{
-            xAxes: [{
-                display: false
-            }],
-            y: {
-                type: 'linear',
-                min: 0,
-                max: 200
-            }
-	},
-        title: {
-          display: false
-        },
-	elements: {
-		point : {
-			radius: 0
-		}
-	},
-	legend: {
-                display: false
-        }
-      }
-    });
-
-    var polarData = {
-      labels: ["Boiler1", "GroupHead1", "GroupHead2", "Boiler2", "Boiler3"],
-      datasets: [{
-        data: [1, 1, 1, 1, 1],
-        backgroundColor: [
-          polarChartColors.boiler1,
-          polarChartColors.grouphead1,
-          polarChartColors.grouphead2,
-          polarChartColors.boiler2,
-          polarChartColors.boiler3,
-        ],
-        borderColor: [
-          polarChartColors.boiler1,
-          polarChartColors.grouphead1,
-          polarChartColors.grouphead2,
-          polarChartColors.boiler2,
-          polarChartColors.boiler3,
-        ],
-        outerGlowWidth: 20,
-        outerGlowColor: polarChartColors.effects
-        }]
-    };
-
-    var polarChartOptions = {
-      startAngle: -Math.PI / 4,
-      animation: false,
-	title : {
-		display : false
-	},
-	legend: {
-		display: false
-	},
-	layout: {
-          padding: 20
-        }
-   };
-
-    Chart.scaleService.defaults.radialLinear.ticks.backdropColor = 'rgba(0, 0, 0, 0)';
-
-    var polarAreaChart = new Chart(document.getElementById("polarChart"), {
-      type: 'polarArea',
-      data: polarData,
-      options: polarChartOptions
+      data: baselineData,
+      options: lineOptions,
     });
 
     var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 
-		ct = 0
-		cp = 0
-		temps = []
+		ct = 1; cp = 1;	cf = 1;
+		temps = [];
        		for (const [key, value] of Object.entries(r)){
 			
 			if (key.includes("temp")){
-				lineChart.data.datasets[ct].data.push(value)
-				temps[ct] = value
+				lineChart0.data.datasets[ct].data.push(value)
 				ct = ct + 1				
 			}
 			if (key.includes("pressure")){
-				lineChart2.data.datasets[cp].data.push(value)
+				lineChart1.data.datasets[cp].data.push(value)
 				cp = cp + 1
 			}
+			if (key.includes("flow")){
+				lineChart2.data.datasets[cf].data.push(value)
+				cf = cf + 1
+			}
 			if (key.includes("time")){
-				lineChart.data.labels.push(value)
+				lineChart0.data.labels.push(value)
+				lineChart1.data.labels.push(value)
 				lineChart2.data.labels.push(value)
-				if (lineChart.data.labels.length > 400){
-					lineChart.data.labels.shift();
-                                        lineChart.data.datasets.forEach((dataset) => {
+				if (lineChart0.data.labels.length > 400){
+					lineChart0.data.labels.shift();
+                                        lineChart0.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
+					lineChart0.data.datasets[0].push(0)
+				}
+				if (lineChart1.data.labels.length > 400){
+					lineChart1.data.labels.shift();
+                                        lineChart1.data.datasets.forEach((dataset) => {
+                                                dataset.data.shift();
+                                        });
+					lineChart1.data.datasets[0].push(0)
 				}
 				if (lineChart2.data.labels.length > 400){
                                         lineChart2.data.labels.shift();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
 					});
+					lineChart2.data.datasets[0].push(0)
                                 }
 			}
 
 		}
-		polarAreaChart.data.datasets[0].data = temps;
-                polarAreaChart.update();
-                lineChart.update();
+                lineChart0.update();
+		lineChart1.update();
                 lineChart2.update();
 	sleep(200);
 	refresh();
+        });
+    }
+    
+    var init = function(){
+        var requests = $.get('/main/read');
+        var tm = requests.done(function(r){
+
+		ct = 1; cp = 1;	cf = 1;
+		temps = [];
+       		for (const [key, value] of Object.entries(r)){
+			
+			if (key.includes("temp")){
+				add = zeroDataSet
+				add.label: key,
+				if (key.includes("boiler")){
+					color = chartColors.boiler[ct]
+				} else {
+					color = chartColors.grouphead[ct]
+				}
+				add.backgroundColor: color,
+				add.borderColor: color,
+				add.pointBorderColor: color,
+				add.pointBackgroundColor: color,
+				add.fill: false,
+				add.pointRadius: 0,
+				add.outerGlowWidth: 40,
+				add.outerGlowColor: color,
+				add.shadowBlur: 10,
+				add.shadowColor: color,
+				lineChart0.data.datasets.push(add)
+				ct = ct + 1				
+			}
+			if (key.includes("pressure")){
+				add = zeroDataSet
+				add.label: key,
+				color = chartColors.pressure,
+				add.backgroundColor: color,
+				add.borderColor: color,
+				add.pointBorderColor: color,
+				add.pointBackgroundColor: color,
+				add.fill: false,
+				add.pointRadius: 0,
+				add.outerGlowWidth: 40,
+				add.outerGlowColor: color,
+				add.shadowBlur: 10,
+				add.shadowColor: color,
+				lineChart1.data.datasets.push(add)
+				cp = cp + 1
+			}
+			if (key.includes("flow")){
+				add = zeroDataSet
+				add.label: key,
+				color = chartColors.pressure,
+				add.backgroundColor: color,
+				add.borderColor: color,
+				add.pointBorderColor: color,
+				add.pointBackgroundColor: color,
+				add.fill: false,
+				add.pointRadius: 0,
+				add.outerGlowWidth: 40,
+				add.outerGlowColor: color,
+				add.shadowBlur: 10,
+				add.shadowColor: color,
+				lineChart2.data.datasets[cf].data.push(value)
+				cf = cf + 1
+			}
+		}
+		
+                lineChart0.update();
+		lineChart1.update();
+                lineChart2.update();
         });
     }
 
@@ -314,8 +211,8 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    init();
     refresh();
-    //setInterval(refresh, 200);
 
 </script>
 
