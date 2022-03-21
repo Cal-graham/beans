@@ -124,7 +124,7 @@
       options: lineOptions,
     });
 
-    var refresh = function(recording){
+    var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 		console.log(recording)
@@ -135,7 +135,7 @@
 			if (key.includes("temp")){
 				lineChart0.data.datasets[ct].data.push(value)
 				ct = ct + 1				
-				console.log(key, lineChart0.data.datasets[ct-1].data)
+				//console.log(key, lineChart0.data.datasets[ct-1].data)
 			}
 			if (key.includes("pressure")){
 				lineChart1.data.datasets[cp].data.push(value)
@@ -177,7 +177,7 @@
 		lineChart1.update();
                 lineChart2.update();
 	sleep(200);
-	refresh(recording);
+	refresh();
         });
     }
     
@@ -258,7 +258,7 @@
     }
 
     init();
-    refresh(recording);
+    refresh();
 
 </script>
 
