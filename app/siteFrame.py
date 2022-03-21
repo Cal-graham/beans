@@ -24,9 +24,9 @@ class SiteFrame:
     smoothing_thread = None
     adc = []
     pins = {
-        'boiler_pressure': '1.0',
-        'grouphead_temperature': '1.1',
-        'boiler_temperature': '1.2',
+        'pressure_boiler': '1.0',
+        'temperature_grouphead': '1.1',
+        'temperature_boiler': '1.2',
         #'gh4': 3
     }
 
