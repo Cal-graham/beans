@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{{args}}
+
 <div class="columns">
 <div class="column is-12">
-	{% if graphs in args.keys() %}
-	{% for graph in args.graphs %}
+	{% if 'graphs' in args.keys() %}
+	{{args['graphs']}}
+	{% for graph in args['graphs'] %}
 	<div class="box has-background-grey-darker">
-		<div class="block" style="position: relative; height:{{100/args.graphs|length}}vh; width:100vw">
+		<div class="block" style="position: relative; height:{{100/args['graphs']|length}}vh; width:100vw">
 		<canvas id="{{graph}}"></canvas>
 		</div>
 	</div>
@@ -100,8 +104,8 @@
 	}
         }
 
-    {% if graphs in args.keys() %}
-    {% for graph in args.graphs %}
+    {% if 'graphs' in args.keys() %}
+    {% for graph in args['graphs'] %}
 	
     var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
       type: 'line',
@@ -116,16 +120,16 @@
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 		console.log(recording)
-		{% if graphs in args.keys() %}
-    		{% for graph in args.graphs %}
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
 		{{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
 			
-			{% if graphs in args.keys() %}
-    			{% for graph in args.graphs %}
+			{% if 'graphs' in args.keys() %}
+    			{% for graph in args['graphs'] %}
 			if (key.includes("{{graph}}")){
 				{{graph}}.data.datasets[{{graph}}_].data.push(value)
 				{{graph}}_ = {{graph}}_ + 1				
@@ -142,7 +146,11 @@
 				}
 				
 			}
+                {% endfor %}
+                {% endif %}
 		}
+                {% if 'graphs' in args.keys() %}
+                {% for graph in args['graphs'] %}
 		{{graph}}.update();
 		{% endfor %}
     		{% endif %}
