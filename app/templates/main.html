@@ -31,12 +31,14 @@
 
     record_button.onclick = function(){
 	recording = 1;
+	console.log(recording)
 	record_button.style.display = 'none';
 	stop_button.style.display = 'inline';
     }
 
     stop_button.onclick = function(){
         recording = 0;
+	console.log(recording)
         stop_button.style.display = 'none';
         record_button.style.display = 'inline';
     }
@@ -125,7 +127,7 @@
     var refresh = function(recording){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-
+		console.log(recording)
 		ct = 1; cp = 1;	cf = 1;
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
@@ -147,21 +149,21 @@
 				lineChart0.data.labels.push(value)
 				lineChart1.data.labels.push(value)
 				lineChart2.data.labels.push(value)
-				if (lineChart0.data.labels.length > 400 && recording == 0){
+				if ((lineChart0.data.labels.length > 400 && recording == 0) || lineChart0.data.labels.length > 1000){
 					lineChart0.data.labels.shift();
                                         lineChart0.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
 					lineChart0.data.datasets[0].data.push(0)
 				}
-				if (lineChart1.data.labels.length > 400 && recording == 0){
+				if ((lineChart1.data.labels.length > 400 && recording == 0) || lineChart1.data.labels.length > 1000){
 					lineChart1.data.labels.shift();
                                         lineChart1.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
 					lineChart1.data.datasets[0].data.push(0)
 				}
-				if (lineChart2.data.labels.length > 400 && recording == 0){
+				if ((lineChart2.data.labels.length > 400 && recording == 0) || lineChart2.data.labels.length > 1000){
                                         lineChart2.data.labels.shift();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
