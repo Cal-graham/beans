@@ -3,21 +3,15 @@
 {% block content %}
 <div class="columns">
 <div class="column is-12">
-<div class="box has-background-grey-darker">
-	<div class="block" style="position: relative; height:25vh; width:100vw">
-	<canvas id="lineChart0"></canvas>
+	{% if graphs in args.keys() %}
+	{% for graph in args.graphs %}
+	<div class="box has-background-grey-darker">
+		<div class="block" style="position: relative; height:{100/args.graphs|length}vh; width:100vw">
+		<canvas id="{graph}"></canvas>
+		</div>
 	</div>
-</div>
-<div class="box has-background-grey-darker">
-        <div class="block" style="position: relative; height:25vh; width:100vw">
-	<canvas id="lineChart1"></canvas>
-	</div>
-</div>
-<div class="box has-background-grey-darker">
-        <div class="block" style="position: relative; height:25vh; width:100vw">
-	<canvas id="lineChart2"></canvas>
-	</div>
-</div>
+	{% endfor %}
+	{% endif %}
 </div>
 </div>
 
@@ -106,37 +100,39 @@
 	}
         }
 
-    var lineChart0 = new Chart(document.getElementById("lineChart0"), {
-      type: 'line',
-      data: $.extend( true, {}, baselineData),
-      options: lineOptions,
-    });
-
-    var lineChart1 = new Chart(document.getElementById("lineChart1"), {
-      type: 'line',
-      data: $.extend( true, {}, baselineData),
-      options: lineOptions,
-    });
+    {% if graphs in args.keys() %}
+    {% for graph in args.graphs %}
 	
-    var lineChart2 = new Chart(document.getElementById("lineChart2"), {
+    var {graph} = new Chart(document.getElementById("{graph}"), {
       type: 'line',
       data: $.extend( true, {}, baselineData),
       options: lineOptions,
     });
+     
+    {% endfor %}
+    {% endif %}
 
     var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 		console.log(recording)
-		ct = 1; cp = 1;	cf = 1;
+		{% if graphs in args.keys() %}
+    		{% for graph in args.graphs %}
+		{graph}_ = 1
+		{% endfor %}
+    		{% endif %}
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
 			
-			if (key.includes("temp")){
-				lineChart0.data.datasets[ct].data.push(value)
-				ct = ct + 1				
+			{% if graphs in args.keys() %}
+    			{% for graph in args.graphs %}
+			if (key.includes("{graph}")){
+				{graph}.data.datasets[ct].data.push(value)
+				{graph}_ = {graph}_ + 1				
 				//console.log(key, lineChart0.data.datasets[ct-1].data)
 			}
+			{% endfor %}
+    			{% endif %}
 			if (key.includes("pressure")){
 				lineChart1.data.datasets[cp].data.push(value)
 				cp = cp + 1
