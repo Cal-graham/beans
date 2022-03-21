@@ -6,8 +6,8 @@
 	{% if graphs in args.keys() %}
 	{% for graph in args.graphs %}
 	<div class="box has-background-grey-darker">
-		<div class="block" style="position: relative; height:{100/args.graphs|length}vh; width:100vw">
-		<canvas id="{graph}"></canvas>
+		<div class="block" style="position: relative; height:{{100/args.graphs|length}}vh; width:100vw">
+		<canvas id="{{graph}}"></canvas>
 		</div>
 	</div>
 	{% endfor %}
@@ -103,7 +103,7 @@
     {% if graphs in args.keys() %}
     {% for graph in args.graphs %}
 	
-    var {graph} = new Chart(document.getElementById("{graph}"), {
+    var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
       type: 'line',
       data: $.extend( true, {}, baselineData),
       options: lineOptions,
@@ -118,7 +118,7 @@
 		console.log(recording)
 		{% if graphs in args.keys() %}
     		{% for graph in args.graphs %}
-		{graph}_ = 1
+		{{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		temps = [];
@@ -126,24 +126,24 @@
 			
 			{% if graphs in args.keys() %}
     			{% for graph in args.graphs %}
-			if (key.includes("{graph}")){
-				{graph}.data.datasets[{graph}_].data.push(value)
-				{graph}_ = {graph}_ + 1				
+			if (key.includes("{{graph}}")){
+				{{graph}}.data.datasets[{{graph}}_].data.push(value)
+				{{graph}}_ = {{graph}}_ + 1				
 				//console.log(key, lineChart0.data.datasets[ct-1].data)
 			}
 			if (key.includes("time")){
-				{graph}.data.labels.push(value)
-				if (({graph}.data.labels.length > 400 && recording == 0) || {graph}.data.labels.length > 1000){
-					{graph}.data.labels.shift();
-                                        {graph}.data.datasets.forEach((dataset) => {
+				{{graph}}.data.labels.push(value)
+				if (({{graph}}.data.labels.length > 400 && recording == 0) || {graph}.data.labels.length > 1000){
+					{{graph}}.data.labels.shift();
+                                        {{graph}}.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
-					{graph}.data.datasets[0].data.push(0)
+					{{graph}}.data.datasets[0].data.push(0)
 				}
 				
 			}
 		}
-		{graph}.update();
+		{{graph}}.update();
 		{% endfor %}
     		{% endif %}
 	sleep(200);
