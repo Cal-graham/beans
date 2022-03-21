@@ -2,12 +2,9 @@
 
 {% block content %}
 
-{{args}}
-
 <div class="columns">
 <div class="column is-12">
 	{% if 'graphs' in args.keys() %}
-	{{args['graphs']}}
 	{% for graph in args['graphs'] %}
 	<div class="box has-background-grey-darker">
 		<div class="block" style="position: relative; height:{{100/args['graphs']|length}}vh; width:100vw">
@@ -42,7 +39,7 @@
     }
 
     var chartColors = {
-        pressure: 'rgb(255, 255, 255)',
+        pressure: ['rgb(255, 255, 255)'],
         grouphead: ['rgb(255, 0, 0)', 'rgb(255, 100, 0)', 'rgb(255, 0, 100)'],
         boiler: ['rgb(100, 0, 255)', 'rgb(0, 0, 255)', 'rgb(0, 100, 255)']
     };
@@ -52,16 +49,16 @@
     var zeroDataSet = {
 	data: [0],
         label: "template",
-	backgroundColor: chartColors.pressure,
-        borderColor: chartColors.pressure,
-        pointBorderColor: chartColors.pressure,
-        pointBackgroundColor: chartColors.pressure,
+	backgroundColor: chartColors.pressure[0],
+        borderColor: chartColors.pressure[0],
+        pointBorderColor: chartColors.pressure[0],
+        pointBackgroundColor: chartColors.pressure[0],
         fill: false,
         pointRadius: 0,
         outerGlowWidth: 40,
-        outerGlowColor: chartColors.pressure,
+        outerGlowColor: chartColors.pressure[0],
         shadowBlur: 10,
-        shadowColor: chartColors.pressure
+        shadowColor: chartColors.pressure[0]
     };
 	    
     var baselineData = {
@@ -119,7 +116,7 @@
     var refresh = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		console.log(recording)
+		//console.log(recording)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
 		{{graph}}_ = 1
@@ -162,20 +159,26 @@
     var init = function(){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-
-		ct = 1; cp = 1;	cf = 1;
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
+		{{graph}}_ = 1
+		{% endfor %}
+    		{% endif %}
 		color = 'rgb(255,255,255)'
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
-			
-			if (key.includes("temp")){
+			{% if 'graphs' in args.keys() %}
+    			{% for graph in args['graphs'] %}
+			if (key.includes("{{graph}}")){
 				add = $.extend( true, {}, zeroDataSet),
 				add.label = key
-				if (key.includes("boiler")){
-					color = chartColors.boiler[ct]
-				} else {
-					color = chartColors.grouphead[ct]
+				{% if 'parts' in args.keys() %}
+				{% for part in args['parts'] %}
+				if (key.includes("{{part}}")){
+					color = chartColors.{{part}}[{{graph}}_]
 				}
+			 	{% endfor %}
+			 	{% endif %}
 				add.backgroundColor = color
 				add.borderColor = color
 				add.pointBorderColor = color
@@ -186,48 +189,17 @@
 				add.outerGlowColor = color
 				add.shadowBlur = 10
 				add.shadowColor = color
-				lineChart0.data.datasets[ct] = (add)
-				ct = ct + 1				
+				{{graph}}.data.datasets[{{graph}}_] = (add)
+				{{graph}}_ = {{graph}}_ + 1		
 			}
-			if (key.includes("pressure")){
-				add = $.extend( true, {}, zeroDataSet),
-				add.label = key
-				color = chartColors.pressure
-				add.backgroundColor = color
-				add.borderColor = color
-				add.pointBorderColor = color
-				add.pointBackgroundColor = color
-				add.fill = false
-				add.pointRadius = 0
-				add.outerGlowWidth = 40
-				add.outerGlowColor = color
-				add.shadowBlur = 10
-				add.shadowColor = color
-				lineChart1.data.datasets[cp] = add
-				cp = cp + 1
-			}
-			if (key.includes("flow")){
-				add = $.extend( true, {}, zeroDataSet),
-				add.label = key
-				color = chartColors.pressure
-				add.backgroundColor = color
-				add.borderColor = color
-				add.pointBorderColor = color
-				add.pointBackgroundColor = color
-				add.fill = false
-				add.pointRadius = 0
-				add.outerGlowWidth = 40
-				add.outerGlowColor = color
-				add.shadowBlur = 10
-				add.shadowColor = color
-				lineChart2.data.datasets[cf] = add
-				cf = cf + 1
-			}
+			{% endfor %}
+    			{% endif %}
 		}
-		
-                lineChart0.update();
-		lineChart1.update();
-                lineChart2.update();
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
+		{{graph}}.update();
+		{% endfor %}
+    		{% endif %}
         });
     }
 
