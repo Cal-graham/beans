@@ -17,11 +17,12 @@ atexit.register(lambda: site_frame.exit())
 @main_blueprint.route('/', methods=['GET', 'POST'])
 def index():
     HTML_args = {}
-    HTML_args['graphs'] = []
+    HTML_args['graphs'] = [] #; HTML_args['streams'] = {}
     for key in site_frame.pins.keys():
         if key.split('_')[0] not in HTML_args['graphs']:
-            HTML_args['graphs'].append(key.split('_')[0])
-    print(HTML_args)
+            HTML_args['graphs'].append(key.split('_')[0]) #; HTML_args['streams'][key.split('_')[0]] = 0
+        #else:
+        #    HTML_args['streams'][key.split('_')[0]] += 1
     return render_template('main.html', args=HTML_args)
 
 

@@ -7,7 +7,7 @@
 	{% if 'graphs' in args.keys() %}
 	{% for graph in args['graphs'] %}
 	<div class="box has-background-grey-darker">
-		<div class="block" style="position: relative; height:{{100/args['graphs']|length}}vh; width:100vw">
+		<div class="block" style="position: relative; height:{{80/args['graphs']|length}}vh; width:100vw">
 		<canvas id="{{graph}}"></canvas>
 		</div>
 	</div>
@@ -36,12 +36,24 @@
 	console.log(recording)
         stop_button.style.display = 'none';
         record_button.style.display = 'inline';
+        {% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+	while ({{graph}}.data.labels.length > 400){
+                {{graph}}.data.labels.shift();
+                {{graph}}.data.datasets.forEach((dataset) => {
+                	dataset.data.shift();
+                });
+	
+        }
+	{{graph}}.data.datasets[0].data.push(0)
+        {% endfor %}
+	{% endif %}
     }
 
     var chartColors = {
-        pressure: ['rgb(255, 255, 255)'],
-        grouphead: ['rgb(255, 0, 0)', 'rgb(255, 100, 0)', 'rgb(255, 0, 100)'],
-        boiler: ['rgb(100, 0, 255)', 'rgb(0, 0, 255)', 'rgb(0, 100, 255)']
+        pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)' ],
+        flow: ['rgb(0, 100, 255)', 'rgb(0, 0, 255)'],
+        temperature: ['rgb(255, 0, 100)', 'rgb(255, 100, 0)']
     };
 
     var color = Chart.helpers.color;
@@ -94,10 +106,7 @@
 	},
 	legend: {
                	display: true,
-		position: 'right',
-      		labels: {
-			color: chartColors.pressure
-		}
+		position: 'right'
 	}
         }
 
@@ -119,7 +128,7 @@
 		//console.log(recording)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
-		{{graph}}_ = 1
+		var {{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		temps = [];
@@ -130,21 +139,24 @@
 			if (key.includes("{{graph}}")){
 				{{graph}}.data.datasets[{{graph}}_].data.push(value)
 				{{graph}}_ = {{graph}}_ + 1				
-				//console.log(key, lineChart0.data.datasets[ct-1].data)
+				//console.log(key, lineChart0.data.datasets[{{graph}}_-1].data)
 			}
-			if (key.includes("time")){
-				{{graph}}.data.labels.push(value)
-				if (({{graph}}.data.labels.length > 400 && recording == 0) || {graph}.data.labels.length > 1000){
-					{{graph}}.data.labels.shift();
+                	{% endfor %}
+                	{% endif %}
+                        if (key.includes("time")){
+	                        {% if 'graphs' in args.keys() %}
+        	                {% for graph in args['graphs'] %}
+                                {{graph}}.data.labels.push(value)
+                                if (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000){
+                                        {{graph}}.data.labels.shift();
                                         {{graph}}.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
-					{{graph}}.data.datasets[0].data.push(0)
-				}
-				
-			}
-                {% endfor %}
-                {% endif %}
+                                        {{graph}}.data.datasets[0].data.push(0)
+                                }
+                        	{% endfor %}
+                        	{% endif %}
+                        }
 		}
                 {% if 'graphs' in args.keys() %}
                 {% for graph in args['graphs'] %}
@@ -161,7 +173,7 @@
         var tm = requests.done(function(r){
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
-		{{graph}}_ = 1
+		var {{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		color = 'rgb(255,255,255)'
@@ -172,13 +184,7 @@
 			if (key.includes("{{graph}}")){
 				add = $.extend( true, {}, zeroDataSet),
 				add.label = key
-				{% if 'parts' in args.keys() %}
-				{% for part in args['parts'] %}
-				if (key.includes("{{part}}")){
-					color = chartColors.{{part}}[{{graph}}_]
-				}
-			 	{% endfor %}
-			 	{% endif %}
+				color = chartColors.{{graph}}[{{graph}}_ - 1]
 				add.backgroundColor = color
 				add.borderColor = color
 				add.pointBorderColor = color
@@ -199,6 +205,9 @@
     		{% for graph in args['graphs'] %}
 		{{graph}}.update();
 		{% endfor %}
+		console.log({{args['graphs'][-1]}}.options.scales);
+		{{args['graphs'][-1]}}.options.scales.xAxes[0].display = true
+		{{args['graphs'][-1]}}.update();
     		{% endif %}
         });
     }

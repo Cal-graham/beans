@@ -27,7 +27,7 @@ class SiteFrame:
         'pressure_boiler': '1.0',
         'temperature_grouphead': '1.1',
         'temperature_boiler': '1.2',
-        #'gh4': 3
+        'flow_grouphead': '1.3'
     }
 
     def __init__(self):
