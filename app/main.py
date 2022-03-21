@@ -16,7 +16,12 @@ atexit.register(lambda: site_frame.exit())
 
 @main_blueprint.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('main.html', args=site_frame.pins.keys())
+    HTML_args = {}
+    graphs = []
+    for key in site_frame.pins.keys():
+        if key.split('_')[0] not in graphs:
+            graphs.append(key.split('_')[0])
+    return render_template('main.html', args=HTML_args)
 
 
 @main_blueprint.route('/read', methods=['GET'])
