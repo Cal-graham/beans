@@ -127,51 +127,25 @@
 			{% if graphs in args.keys() %}
     			{% for graph in args.graphs %}
 			if (key.includes("{graph}")){
-				{graph}.data.datasets[ct].data.push(value)
+				{graph}.data.datasets[{graph}_].data.push(value)
 				{graph}_ = {graph}_ + 1				
 				//console.log(key, lineChart0.data.datasets[ct-1].data)
 			}
-			{% endfor %}
-    			{% endif %}
-			if (key.includes("pressure")){
-				lineChart1.data.datasets[cp].data.push(value)
-				cp = cp + 1
-			}
-			if (key.includes("flow")){
-				lineChart2.data.datasets[cf].data.push(value)
-				cf = cf + 1
-			}
 			if (key.includes("time")){
-				lineChart0.data.labels.push(value)
-				lineChart1.data.labels.push(value)
-				lineChart2.data.labels.push(value)
-				if ((lineChart0.data.labels.length > 400 && recording == 0) || lineChart0.data.labels.length > 1000){
-					lineChart0.data.labels.shift();
-                                        lineChart0.data.datasets.forEach((dataset) => {
+				{graph}.data.labels.push(value)
+				if (({graph}.data.labels.length > 400 && recording == 0) || {graph}.data.labels.length > 1000){
+					{graph}.data.labels.shift();
+                                        {graph}.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
-					lineChart0.data.datasets[0].data.push(0)
+					{graph}.data.datasets[0].data.push(0)
 				}
-				if ((lineChart1.data.labels.length > 400 && recording == 0) || lineChart1.data.labels.length > 1000){
-					lineChart1.data.labels.shift();
-                                        lineChart1.data.datasets.forEach((dataset) => {
-                                                dataset.data.shift();
-                                        });
-					lineChart1.data.datasets[0].data.push(0)
-				}
-				if ((lineChart2.data.labels.length > 400 && recording == 0) || lineChart2.data.labels.length > 1000){
-                                        lineChart2.data.labels.shift();
-					lineChart2.data.datasets.forEach((dataset) => {
-						dataset.data.shift();
-					});
-					lineChart2.data.datasets[0].data.push(0)
-                                }
+				
 			}
-
 		}
-                lineChart0.update();
-		lineChart1.update();
-                lineChart2.update();
+		{graph}.update();
+		{% endfor %}
+    		{% endif %}
 	sleep(200);
 	refresh();
         });
