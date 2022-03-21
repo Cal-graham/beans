@@ -50,6 +50,7 @@
 	.rows{
 	    display: flex;
 	    flex-direction: column;
+	    align-items: stretch;
 	}
     </style>
 </head>
@@ -63,14 +64,19 @@
     </div>
     <div class="navbar-end">
         <div class="navbar-item">
+	<form name="navbar">
             <div class="buttons">
-                <a class="button is-primary">
-                    <strong>Save</strong>
-                </a>
+                <button class="button is-primary" name="record" value="record" type="button"> 
+                    <strong>Record</strong>
+                </button>
+		<button class="button is-danger" name="stop" value="stop" type="button">
+                    <strong>Stop</strong>
+                </button>
                 <a class="button is-light">
                     Load
                 </a>
             </div>
+	</form>
         </div>
     </div>
 </nav>

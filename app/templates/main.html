@@ -1,22 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<div class='rows is-fullheight' style="width=100%;height=95%">
-<div class='box is-fullheight has-background-grey-darker'  style="width=100%;height=95%">
-	<div class='row is-full'> 
-		<canvas id="lineChart0" style="width=100%;height=100%"></canvas>
+<div class="columns">
+<div class="column is-12">
+<div class="box has-background-grey-darker">
+	<div class="block" style="position: relative; height:25vh; width:100vw">
+	<canvas id="lineChart0"></canvas>
 	</div>
-	<div class='row is-full'> 
-		<canvas id="lineChart1" style="width=100%;height=100%"></canvas>
+</div>
+<div class="box has-background-grey-darker">
+        <div class="block" style="position: relative; height:25vh; width:100vw">
+	<canvas id="lineChart1"></canvas>
 	</div>
-	<div class='row is-full'>
-		<canvas id="lineChart2" style="width=100%;height=100%"></canvas>
+</div>
+<div class="box has-background-grey-darker">
+        <div class="block" style="position: relative; height:25vh; width:100vw">
+	<canvas id="lineChart2"></canvas>
 	</div>
+</div>
 </div>
 </div>
 
 <script>
+
+    var record_button = document.navbar['record'];
+    var stop_button = document.navbar['stop'];
+    stop_button.style.display = 'none';
+
+    var recording = 0;
+
+    record_button.onclick = function(){
+	recording = 1;
+	record_button.style.display = 'none';
+	stop_button.style.display = 'inline';
+    }
+
+    stop_button.onclick = function(){
+        recording = 0;
+        stop_button.style.display = 'none';
+        record_button.style.display = 'inline';
+    }
 
     var chartColors = {
         pressure: 'rgb(255, 255, 255)',
@@ -45,8 +68,6 @@
       labels: [''],
       datasets: [
 	$.extend( true, {}, zeroDataSet),
-	$.extend( true, {}, zeroDataSet),
-	$.extend( true, {}, zeroDataSet),
 	]
     };
 	
@@ -57,8 +78,8 @@
             padding:{
 		left: 0,
 		right: 0,
-		top: -15,
-		bottom: -15
+		top: 0,
+		bottom: -10
 	    }
         },
         scales:{
@@ -67,7 +88,7 @@
             }],
         },
         title: {
-          display: true
+          display: false
         },
 	elements: {
 		point : {
@@ -75,9 +96,13 @@
 		}
 	},
 	legend: {
-                display: false
+               	display: true,
+		position: 'right',
+      		labels: {
+			color: chartColors.pressure
+		}
+	}
         }
-      }
 
     var lineChart0 = new Chart(document.getElementById("lineChart0"), {
       type: 'line',
@@ -97,7 +122,7 @@
       options: lineOptions,
     });
 
-    var refresh = function(){
+    var refresh = function(recording){
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
 
@@ -122,21 +147,21 @@
 				lineChart0.data.labels.push(value)
 				lineChart1.data.labels.push(value)
 				lineChart2.data.labels.push(value)
-				if (lineChart0.data.labels.length > 400){
+				if (lineChart0.data.labels.length > 400 && recording == 0){
 					lineChart0.data.labels.shift();
                                         lineChart0.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
 					lineChart0.data.datasets[0].data.push(0)
 				}
-				if (lineChart1.data.labels.length > 400){
+				if (lineChart1.data.labels.length > 400 && recording == 0){
 					lineChart1.data.labels.shift();
                                         lineChart1.data.datasets.forEach((dataset) => {
                                                 dataset.data.shift();
                                         });
 					lineChart1.data.datasets[0].data.push(0)
 				}
-				if (lineChart2.data.labels.length > 400){
+				if (lineChart2.data.labels.length > 400 && recording == 0){
                                         lineChart2.data.labels.shift();
 					lineChart2.data.datasets.forEach((dataset) => {
 						dataset.data.shift();
@@ -150,7 +175,7 @@
 		lineChart1.update();
                 lineChart2.update();
 	sleep(200);
-	refresh();
+	refresh(recording);
         });
     }
     
@@ -231,7 +256,7 @@
     }
 
     init();
-    refresh();
+    refresh(recording);
 
 </script>
 
