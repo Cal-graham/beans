@@ -20,8 +20,8 @@ if __name__ == "__main__":
     #   Run
     app_ = create_app();
 
-    @app_.route('/', methods=['GET', 'POST'])
-    def index():
-        return render_template('main.html')
+    #@app_.route('/', methods=['GET', 'POST'])
+    #def index():
+    #    return render_template('main.html')
 
     app_.run(host='0.0.0.0', port=5000, debug=False)

@@ -14,6 +14,11 @@ site_frame = SiteFrame()
 atexit.register(lambda: site_frame.exit())
 
 
+@main_blueprint.route('/', methods=['GET', 'POST'])
+def index():
+    return render_template('main.html', args=site_frame.pins.keys())
+
+
 @main_blueprint.route('/read', methods=['GET'])
 def read():
     data = site_frame.filter_data #site_frame.pull_points()
