@@ -2,6 +2,7 @@ from time import sleep, time
 from copy import deepcopy
 import threading
 import numpy as np
+import requests
 
 
 if 1:
@@ -20,6 +21,7 @@ class SiteFrame:
     filter_data = {}
     run_adc_thread = 0
     run_smoothing_thread = 0
+    last_pressure_alert = 0
     adc_thread = None
     smoothing_thread = None
     adc = []
@@ -87,6 +89,9 @@ class SiteFrame:
             self.update_data()
             for key in self.pins.keys():
                 self.filter_data[key] = np.average(self.real_data[key])
+                if 'pressure' in key:
+                    if self.filter_data[key] > 0:
+                        self.pressure_alert()
 
     def update_data(self):
         for key in self.pins.keys():
@@ -102,18 +107,8 @@ class SiteFrame:
 
     def smooth_data(self):
         for key in self.pins.keys():
-            '''ind = 0
-            weight = []
-            for value in self.real_data[f'{key}_time']:
-                if value >= self.real_data[f'{key}_time'][0] and ind == 0:
-                    weight.append((value - self.real_data[f'{key}_time'][0])/60)
-                else:
-                    weight.append((value - self.real_data[f'{key}_time'][0] + 60)/60)
-                    ind = 1'''
             weight = np.exp(np.linspace(0, 1, 100))
-            #self.filter_data[key] = np.average( self.real_data[key] ) #np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
             self.filter_data[key] = np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
-            #sel#self.filter_data[key] = lowess(self.real_data[key], self.real_data[f'{key}_time'], frac=0.4)
 
     def pull_points(self):
         self.update_data()
@@ -134,4 +129,13 @@ class SiteFrame:
         for value in read:
             result.append((value*4.092 - 0.5)*50)
         return result
+    
+    def pressure_alert(self):
+        if time() - self.last_pressure_alert > 5*60:
+            notify('ALERT - High Pressure')
 
+    def notify(self, message):
+        requests.post(
+            'https://maker.ifttt.com/trigger/pavoni_control/with/key/fEcmU_SfuJkXpOY0Ty4fYVzFsEg0L1UP8X8364OZ12q', 
+                      json={"value1":message,"value2":"none","value3":"none"})
+    
