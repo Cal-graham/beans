@@ -90,7 +90,7 @@ class SiteFrame:
             for key in self.pins.keys():
                 self.filter_data[key] = np.average(self.real_data[key])
                 if 'pressure' in key:
-                    if self.filter_data[key] > 0:
+                    if self.filter_data[key] > 20:
                         self.pressure_alert()
 
     def update_data(self):
@@ -132,10 +132,10 @@ class SiteFrame:
     
     def pressure_alert(self):
         if time() - self.last_pressure_alert > 5*60:
-            notify('ALERT - High Pressure')
+            self.notify('ALERT - High Pressure'); self.last_pressure_alert = time()
 
     def notify(self, message):
         requests.post(
-            'https://maker.ifttt.com/trigger/pavoni_control/with/key/fEcmU_SfuJkXpOY0Ty4fYVzFsEg0L1UP8X8364OZ12q', 
+            'https://maker.ifttt.com/trigger/notification/with/key/fEcmU_SfuJkXpOY0Ty4fYVzFsEg0L1UP8X8364OZ12q', 
                       json={"value1":message,"value2":"none","value3":"none"})
     

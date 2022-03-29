@@ -24,13 +24,6 @@
 
     var recording = 0;
 
-    {% if 'graphs' in args.keys() %}
-    {% for graph in args['graphs'] %}
-    var {{graph}}_maintain = 0 
-    {% endfor %}
-    {% endif %}
-
-
     record_button.onclick = function(){
 	recording = 1;
 	console.log(recording)
@@ -43,18 +36,6 @@
 	console.log(recording)
         stop_button.style.display = 'none';
         record_button.style.display = 'inline';
-        {% if 'graphs' in args.keys() %}
-        {% for graph in args['graphs'] %}
-	while ({{graph}}.data.labels.length > 400){
-                {{graph}}.data.labels.shift();
-                {{graph}}.data.datasets.forEach((dataset) => {
-                	dataset.data.shift();
-                });
-	
-        }
-	{{graph}}.data.datasets[0].data.push(0)
-        {% endfor %}
-	{% endif %}
     }
 
     var chartColors = {
@@ -66,13 +47,13 @@
     var color = Chart.helpers.color;
 	
     var zeroDataSet = {
-	data: [],
+	data: [0],
         label: "template",
 	backgroundColor: chartColors.pressure[0],
         borderColor: chartColors.pressure[0],
         pointBorderColor: chartColors.pressure[0],
         pointBackgroundColor: chartColors.pressure[0],
-        fill: true,
+        fill: false,
         pointRadius: 0,
         outerGlowWidth: 40,
         outerGlowColor: chartColors.pressure[0],
@@ -113,7 +94,10 @@
 	},
 	legend: {
                	display: true,
-		position: 'right'
+		position: 'right',
+      		labels: {
+			color: chartColors.pressure
+		}
 	}
         }
 
@@ -135,7 +119,7 @@
 		//console.log(recording)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
-		var {{graph}}_ = 0
+		var {{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		temps = [];
@@ -146,7 +130,7 @@
 			if (key.includes("{{graph}}")){
 				{{graph}}.data.datasets[{{graph}}_].data.push(value)
 				{{graph}}_ = {{graph}}_ + 1				
-				//console.log(key, lineChart0.data.datasets[{{graph}}_].data)
+				//console.log(key, lineChart0.data.datasets[{{graph}}_-1].data)
 			}
                 	{% endfor %}
                 	{% endif %}
@@ -156,14 +140,10 @@
                                 {{graph}}.data.labels.push(value)
                                 if (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000){
                                         {{graph}}.data.labels.shift();
-					{{graph}}_count = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
-						if ({{graph}}_count <= {{graph}}_maintain){
-                                                	dataset.data.shift();
-							{{graph}}_count = {{graph}}_count + 1
-						}
+                                                dataset.data.shift();
                                         });
-                                        //{{graph}}.data.datasets[0].data.push(0)
+                                        {{graph}}.data.datasets[0].data.push(0)
                                 }
                         	{% endfor %}
                         	{% endif %}
@@ -174,9 +154,8 @@
 		{{graph}}.update();
 		{% endfor %}
     		{% endif %}
-	//sleep(500);
-	//refresh();
-	setTimeout(refresh, 100);
+	sleep(200);
+	refresh();
         });
     }
     
@@ -185,7 +164,7 @@
         var tm = requests.done(function(r){
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
-		var {{graph}}_ = 0
+		var {{graph}}_ = 1
 		{% endfor %}
     		{% endif %}
 		color = 'rgb(255,255,255)'
@@ -196,20 +175,19 @@
 			if (key.includes("{{graph}}")){
 				add = $.extend( true, {}, zeroDataSet),
 				add.label = key
-				color = chartColors.{{graph}}[{{graph}}_]
-				add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
+				color = chartColors.{{graph}}[{{graph}}_ - 1]
+				add.backgroundColor = color
 				add.borderColor = color
 				add.pointBorderColor = color
 				add.pointBackgroundColor = color
-				add.fill = true
+				add.fill = false
 				add.pointRadius = 0
 				add.outerGlowWidth = 40
 				add.outerGlowColor = color
 				add.shadowBlur = 10
 				add.shadowColor = color
 				{{graph}}.data.datasets[{{graph}}_] = (add)
-				{{graph}}_ = {{graph}}_ + 1
-				{{graph}}_maintain = {{graph}}_
+				{{graph}}_ = {{graph}}_ + 1		
 			}
 			{% endfor %}
     			{% endif %}
@@ -218,10 +196,8 @@
     		{% for graph in args['graphs'] %}
 		{{graph}}.update();
 		{% endfor %}
-		console.log({{args['graphs'][-1]}}.options.scales);
-		{{args['graphs'][-1]}}.options.scales.xAxes[0].display = true
-		{{args['graphs'][-1]}}.update();
     		{% endif %}
+		{}
         });
     }
 
