@@ -56,6 +56,29 @@
         {% endfor %}
 	{% endif %}
     }
+	 
+    profile = function(){
+	{% if 'graphs' in args.keys() %}
+	{% for graph in args['graphs'] %}
+    	add = $.extend( true, {}, zeroDataSet),
+	add.label = key
+	color = chartColors.{{graph}}[0]
+	add.backgroundColor = color
+	add.borderColor = color
+	add.pointBorderColor = color
+	add.pointBackgroundColor = color
+	add.fill = false
+	add.pointRadius = 0
+	add.outerGlowWidth = 40
+	add.outerGlowColor = color
+	add.shadowBlur = 10
+	add.shadowColor = color
+	add.borderDash = [10,5]
+	add.data = [0, 0]
+	{{graph}}.data.datasets[{{graph}}_mainatain] = (add)
+	{% endfor %}
+	{% endif %}
+    }
 
     var chartColors = {
         pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)' ],
@@ -158,7 +181,7 @@
                                         {{graph}}.data.labels.shift();
 					{{graph}}_count = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
-						if ({{graph}}_count <= {{graph}}_maintain){
+						if ({{graph}}_count < {{graph}}_maintain){
                                                 	dataset.data.shift();
 							{{graph}}_count = {{graph}}_count + 1
 						}
