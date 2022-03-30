@@ -28,12 +28,38 @@ def index():
 
 @main_blueprint.route('/read', methods=['GET'])
 def read():
-    print(f'START: {time()}')
-    data = site_frame.filter_data #site_frame.pull_points()
+    #print(f'START: {time()}')
+    if site_frame.profile_send:
+        data = site_frame.generate_profile()
+    else:
+        data = site_frame.filter_data #site_frame.pull_points()
     now = datetime.now()
     data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
     #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
-    response = make_response(json.dumps(data)); print(data)
-    response.content_type = 'application/json'; print(f'END: {time()}')
+    response = make_response(json.dumps(data)); #print(data)
+    response.content_type = 'application/json'; #print(f'END: {time()}')
     return response
+
+
+@main_blueprint.route('/profile_enable/<type>', methods=['GET'])
+def profile_enable(type):
+    site_frame.enable_profile(str(type)); print(f'START: {site_frame.profile_generate}'); return '1'
+    #data = site_frame.filter_data #site_frame.pull_points()
+    #now = datetime.now()
+    #data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
+    #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
+    #response = make_response(json.dumps(data)); print(data)
+    #response.content_type = 'application/json'; print(f'END: {time()}')
+    #return response
+
+
+@main_blueprint.route('/profile_disable', methods=['GET'])
+def profile_disable():
+    site_frame.disable_profile(); print(f'END: {site_frame.profile_generate}'); return '1'
+
+
+@main_blueprint.route('/profile_start', methods=['GET'])
+def profile_start():
+    site_frame.start_profile(); print(f'START: {site_frame.profile_generate}'); return '1'
+
 

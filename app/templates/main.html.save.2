@@ -24,14 +24,10 @@
 
     var profile_button = document.navbar['profile'];
     var end_button = document.navbar['end'];
-    var start_button = document.navbar['start'];
     end_button.style.display = 'none';
-    start_button.style.display ='none';
 
     var recording = 0;
     var profiling = 0;
-    var enable_refresh = 1;
-    var end_profiling = 0;
 
     {% if 'graphs' in args.keys() %}
     {% for graph in args['graphs'] %}
@@ -74,35 +70,26 @@
         console.log(profiling)
         profile_button.style.display = 'none';
         end_button.style.display = 'inline';
-	start_button.style.display = 'inline';
-    }
-
-    start_button.onclick = function(){
-	start_button.style.display = 'none';
-	$.get('/main/profile_start')
     }
 
     end_button.onclick = function(){
-	console.log('stopping...')
-        profiling = 0;
-        //console.log(profiling)
-	start_button.style.display = 'none';
+        recording = 0;
+        console.log(profiling)
         end_button.style.display = 'none';
         profile_button.style.display = 'inline';
-	end_profiling = 1
-	$.get('/main/profile_disable')
-	console.log('stopped')
-    }
-
-    end_profiles = function(){
+	
         {% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
-        for (i = {{graph}}_maintain; i < {{graph}}.data.datasets.length; i++){
-                {{graph}}.data.datasets.pop();
-        }
+	for (i = {{graph}}_maintain; i < {{graph}}.data.datasets.length; i++){
+		{{graph}}.data.datasets.pop();
+	}
         {% endfor %}
         {% endif %}
-	end_profiling = 0
+	
+	$.get('/main/profile_disable')
+	
+	init();
+
     }
 	 
     var chartColors = {
@@ -178,18 +165,9 @@
     {% endif %}
 
     var refresh = function(){
-
-	console.log('reading...')	
-
-	while (enable_refresh == 0){
-		sleep(100);
-	}
-
-	try{
-
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		console.log(r)
+		//console.log(recording)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
 		var {{graph}}_ = 0
@@ -200,8 +178,7 @@
 			
 			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
-			if (key.includes("{{graph}}") && enable_refresh == 1){
-				console.log({{graph}}_)
+			if (key.includes("{{graph}}")){
 				{{graph}}.data.datasets[{{graph}}_].data.push(value)
 				{{graph}}_ = {{graph}}_ + 1				
 				//console.log(key, lineChart0.data.datasets[{{graph}}_].data)
@@ -212,7 +189,7 @@
 	                        {% if 'graphs' in args.keys() %}
         	                {% for graph in args['graphs'] %}
                                 {{graph}}.data.labels.push(value)
-                                if ( (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
+                                if (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000){
                                         {{graph}}.data.labels.shift();
 					{{graph}}_count = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
@@ -234,21 +211,8 @@
     		{% endif %}
 	//sleep(500);
 	//refresh();
-
-	if (end_profiling == 1){
-		end_profiles();
-	}
-
 	setTimeout(refresh, 100);
         });
-
-	} catch(err) {
-
-	console.log(err)
-	refresh();
-
-	}
-
     }
     
     var init = function(){
@@ -304,14 +268,13 @@
     refresh();
 
     profile = function(profiles){
-	
-	enable_refresh = 0 
+ 
 	for (const profile in profiles){
 		
 		sleep(100)
 		console.log(profile)	
 		$.get('/main/profile_enable/'.concat(profile))
-		//clear_graphs(0);
+		clear_graphs(0);
 
         	{% if 'graphs' in args.keys() %}
         	{% for graph in args['graphs'] %}
@@ -338,7 +301,7 @@
         		add.shadowBlur = 10
         		add.shadowColor = color
         		add.borderDash = [10,5]
-        		add.data = new Array({{graph}}.data.datasets[0].data.length).fill(0);
+        		add.data = [] //new Array(400).fill(0);
         		//console.log(add)
 
        		 	{{graph}}.data.datasets[{{graph}}_maintain + {{graph}}_] = (add)
@@ -349,7 +312,6 @@
         	{% endfor %}
         	{% endif %}
 	}
-    enable_refresh = 1
     }
 
 

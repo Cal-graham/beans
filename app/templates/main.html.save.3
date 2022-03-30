@@ -24,14 +24,11 @@
 
     var profile_button = document.navbar['profile'];
     var end_button = document.navbar['end'];
-    var start_button = document.navbar['start'];
     end_button.style.display = 'none';
-    start_button.style.display ='none';
 
     var recording = 0;
     var profiling = 0;
     var enable_refresh = 1;
-    var end_profiling = 0;
 
     {% if 'graphs' in args.keys() %}
     {% for graph in args['graphs'] %}
@@ -74,35 +71,31 @@
         console.log(profiling)
         profile_button.style.display = 'none';
         end_button.style.display = 'inline';
-	start_button.style.display = 'inline';
-    }
-
-    start_button.onclick = function(){
-	start_button.style.display = 'none';
-	$.get('/main/profile_start')
     }
 
     end_button.onclick = function(){
+	enable_refresh = 0;
 	console.log('stopping...')
         profiling = 0;
-        //console.log(profiling)
-	start_button.style.display = 'none';
+        console.log(profiling)
+	
         end_button.style.display = 'none';
         profile_button.style.display = 'inline';
-	end_profiling = 1
-	$.get('/main/profile_disable')
-	console.log('stopped')
-    }
-
-    end_profiles = function(){
+	
+	
         {% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
-        for (i = {{graph}}_maintain; i < {{graph}}.data.datasets.length; i++){
-                {{graph}}.data.datasets.pop();
-        }
+	for (i = {{graph}}_maintain; i < {{graph}}.data.datasets.length; i++){
+		{{graph}}.data.datasets.pop();
+	}
         {% endfor %}
         {% endif %}
-	end_profiling = 0
+	
+	$.get('/main/profile_disable')
+	//init();
+	console.log('stopped')
+	enable_refresh = 1
+
     }
 	 
     var chartColors = {
@@ -234,11 +227,6 @@
     		{% endif %}
 	//sleep(500);
 	//refresh();
-
-	if (end_profiling == 1){
-		end_profiles();
-	}
-
 	setTimeout(refresh, 100);
         });
 

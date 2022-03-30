@@ -3,6 +3,7 @@ from copy import deepcopy
 import threading
 import numpy as np
 import requests
+import profiles
 
 
 if 1:
@@ -30,7 +31,7 @@ class SiteFrame:
         'temperature_grouphead': '1.1',
         'temperature_boiler': '1.2',
         'flow_grouphead': '1.3'
-    }
+    }; profile_send = 0; profile_generate = {'type': []}; profile_start = 0;
 
     def __init__(self):
         if onRpi:
@@ -129,7 +130,7 @@ class SiteFrame:
         for value in read:
             result.append((value*4.092 - 0.5)*50)
         return result
-    
+
     def pressure_alert(self):
         if time() - self.last_pressure_alert > 5*60:
             self.notify('ALERT - High Pressure'); self.last_pressure_alert = time()
@@ -138,4 +139,37 @@ class SiteFrame:
         requests.post(
             'https://maker.ifttt.com/trigger/notification/with/key/fEcmU_SfuJkXpOY0Ty4fYVzFsEg0L1UP8X8364OZ12q', 
                       json={"value1":message,"value2":"none","value3":"none"})
-    
+
+    def enable_profile(self, type):
+        self.profile_send = 1
+        self.profile_generate['type'].append(type); return 1
+
+    def start_profile(self):
+        self.profile_start = 1
+        self.profile_generate['start_time'] = time(); return 1
+
+    def generate_profile(self):
+        tmp = self.filter_data.copy(); #print(tmp)
+        #for key in self.filter_data.keys():
+        #    response[key] = self.filter_data[key]
+        if 'constant_temperature' in self.profile_generate['type']:
+            tmp['temperature_profile'] = profiles.constant_temperature(self.profile_generate)
+        if 'constant_pressure' in self.profile_generate['type']:
+            tmp['pressure_profile'] = profiles.constant_pressure(self.profile_generate)
+        if 'light_roast_pressure' in self.profile_generate['type']:
+            tmp['pressure_profile'] = profiles.light_roast_pressure(self.profile_generate)
+
+        return tmp
+
+    def disable_profile(self):
+        self.profile_send = 0
+        self.profile_generate['type'] = []; #del self.profile_generate['start_time'] #for key in self.filter_data.keys():
+        #    response[key] = self.filter_data[key]
+        #if 'constant_temperature' in self.profile_generate['type']:
+        #    tmp['temperature_profile'] = 60
+        #if 'constant_pressure' in self.profile_generate['type']:
+        #    tmp['pressure_profile'] = 16
+        return 1
+
+
+
