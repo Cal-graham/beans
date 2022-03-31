@@ -63,3 +63,9 @@ def profile_start():
     site_frame.start_profile(); print(f'START: {site_frame.profile_generate}'); return '1'
 
 
+@main_blueprint.route('/profile_settings/<type>', methods=['GET'])
+def profile_settings(type):
+    response = make_response(json.dumps(site_frame.pull_profile_settings(str(type)))); #print(data)
+    response.content_type = 'application/json'; #print(f'END: {time()}')
+    return response
+

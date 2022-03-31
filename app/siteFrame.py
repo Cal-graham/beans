@@ -1,5 +1,6 @@
 from time import sleep, time
 from copy import deepcopy
+from inspect import getmembers, isfunction
 import threading
 import numpy as np
 import requests
@@ -32,6 +33,14 @@ class SiteFrame:
         'temperature_boiler': '1.2',
         'flow_grouphead': '1.3'
     }; profile_send = 0; profile_generate = {'type': []}; profile_start = 0;
+    profile_options = dir(profiles) #profile_options = getmembers(profiles, isfunction)
+    current_profiles = {
+        'pressure_boiler': 'constant_pressure',
+        'temperature_grouphead': 'constant_temperature',
+        'temperature_boiler': 'constant_temperature',
+        'flow_grouphead': 'constant_flow'
+    };
+
 
     def __init__(self):
         if onRpi:
@@ -152,14 +161,13 @@ class SiteFrame:
         tmp = self.filter_data.copy(); #print(tmp)
         #for key in self.filter_data.keys():
         #    response[key] = self.filter_data[key]
-        if 'constant_temperature' in self.profile_generate['type']:
-            tmp['temperature_profile'] = profiles.constant_temperature(self.profile_generate)
-        if 'constant_pressure' in self.profile_generate['type']:
-            tmp['pressure_profile'] = profiles.constant_pressure(self.profile_generate)
-        if 'light_roast_pressure' in self.profile_generate['type']:
-            tmp['pressure_profile'] = profiles.light_roast_pressure(self.profile_generate)
-
+        for type in self.profile_generate['type']:
+            if type in self.profile_options:
+                    tmp[type] = self.get_profile(type, time())
         return tmp
+
+    def get_profile(self, type, time_):
+        return getattr(profiles, type)(self.profile_generate, time_)
 
     def disable_profile(self):
         self.profile_send = 0
@@ -171,5 +179,16 @@ class SiteFrame:
         #    tmp['pressure_profile'] = 16
         return 1
 
-
+    def pull_profile_settings(self, graph):
+        response = {'profile_data': [], 'profile_labels': [], 'profile_name': [], 'profile_options': [option for option in self.profile_options if graph.split('_')[0] in option]}; type = []
+        for key in self.current_profiles.keys():
+            if graph.split('_')[0] in key:
+                type.append(self.current_profiles[key])
+                response['profile_name'].append(self.current_profiles[key])
+        if len(type) == 0:
+            return response
+        for t in range(61):
+            response['profile_data'].append(self.get_profile(type[0], time()+t))
+            response['profile_labels'].append(str(t))
+        return response
 
