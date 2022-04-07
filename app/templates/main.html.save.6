@@ -14,22 +14,14 @@
     </header>
     <section class="modal-card-body">
         <div class="box has-background-grey-darker">
-                <div class="block" style="position:relative; height:30vh; width:50vw">
+                <div class="block" style="position:relative; height:30vh; width:30vw">
                 <canvas id="{{graph}}_profiling_chart"></canvas>
                 </div>
         </div>
 	<div class="select" align="right">
-		{% if 'source' in args.keys() %}
-		<div class="columns">
-		{% for source in args['source'][graph] %}
-		<div class="column is-{{12/args['source'].keys()|length}}">
-		<select id="{{graph}}_profiling_{{source}}_select" onchange="change_profile('{{graph}}', '{{source}}');">
+		<select id="{{graph}}_profiling_select">
 			<option>Profiling Options</option>
 		</select>
-		</div>
-		{% endfor %}
-		{% endif %}
-		</div>
 	</div>
     </section>
     <footer class="modal-card-foot">
@@ -66,51 +58,31 @@
     }
 
     function open_profiling(id){
-	console.log(id)
 	var modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
       		type: 'line',
-		data: {},
+      		data: $.extend( true, {}, baselineData),
       		options: lineOptions,
     	});
 	modal_chart.options.legend.display = false
         var requests = $.get('/main/profile_settings/'.concat(id));
         var tm = requests.done(function(r){
-		
-		modal_chart.data.labels = r['profile_labels'][0]
-		for (const [index, element] of r['profile_name'].entries()){
-			modal_chart.data.datasets[index] = $.extend(true, {}, zeroDataSet)
-			modal_chart.data.datasets[index].data = r['profile_data'][index]
-        	        modal_chart.data.datasets[index].label = element
-		}
-		//modal_chart.data.datasets[0].data = r['profile_data']
-		//modal_chart.data.datasets[0].label = r['profile_name']
+		modal_chart.data.labels = r['profile_labels']
+		modal_chart.data.datasets[0].data = r['profile_data']
+		modal_chart.data.datasets[0].label = r['profile_name']
 		document.getElementById(id.concat('_title')).innerHTML = r['profile_name'];
-		{% if 'graphs' in args.keys() and 'source' in args.keys() %}
-		{% for graph in args['graphs'] %}
-		if (id.includes('{{graph}}')){
-                {% for source in args['source'][graph] %}
-                var select = document.getElementById(id.concat('_{{source}}').concat('_select'));
+                var select = document.getElementById(id.concat('_select'));
 		for (let i=1; i<r['profile_options'].length+1; i++){
-			select[i] = new Option(r['profile_options'][i-1], r['profile_options'][i-1], false, false);
+			select[i] = new Option(r['profile_options'][i-1], i, false, false);
 			//console.log(select)
-		};		
-                {% endfor %}
-                }
-                {% endfor %}
-                {% endif %}
-
+		};
 		modal_chart.update();
                 console.log(r)
                 open_modal(id);
 	});
     }
 
-    function change_profile(graph, source){
-	var select_form = document.getElementById(graph.concat('_profiling_').concat(source).concat('_select'));
-	var id = select_form.options[select_form.selectedIndex].value;
-	var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
-	close_modal(graph.concat('_profiling'))
-	open_profiling(graph.concat('_profiling'))
+    function change_profile(graph, id){
+	
     }
 
     var record_button = document.navbar['record'];
@@ -163,14 +135,14 @@
 
     record_button.onclick = function(){
 	recording = 1;
-	console.log('recording...')
+	console.log(recording)
 	record_button.style.display = 'none';
 	stop_button.style.display = 'inline';
     }
 
     stop_button.onclick = function(){
         recording = 0;
-	console.log('end recording')
+	console.log(recording)
         stop_button.style.display = 'none';
         record_button.style.display = 'inline';
         clear_graphs(400);
@@ -178,12 +150,8 @@
 
     profile_button.onclick = function(){
         profiling = 1;
-	var request = $.get('/main/current_profiles')
-	var tm = request.done(function(r){
-		profile(r)
-	});
-	//profile({'constant_temperature':1, 'constant_pressure':2})
-        console.log('profiling...')
+	profile({'constant_temperature':1, 'constant_pressure':2})
+        console.log(profiling)
         profile_button.style.display = 'none';
         end_button.style.display = 'inline';
 	start_button.style.display = 'inline';
@@ -272,7 +240,7 @@
 		}
 	},
 	legend: {
-               	display: false,
+               	display: true,
 		position: 'right'
 	}
         }
@@ -291,7 +259,7 @@
 
     var refresh = function(){
 
-	//console.log('reading...')	
+	console.log('reading...')	
 
 	while (enable_refresh == 0){
 		sleep(100);
@@ -301,7 +269,7 @@
 
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		//console.log(r)
+		console.log(r)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
 		var {{graph}}_ = 0
@@ -416,13 +384,13 @@
     refresh();
 
     profile = function(profiles){
-	console.log(profiles)
+	
 	enable_refresh = 0 
-	for (var index=0; index<profiles.length; index++){
+	for (const profile in profiles){
 		
 		sleep(100)
-		console.log(profiles[index])	
-		$.get('/main/profile_enable/'.concat(profiles[index]))
+		console.log(profile)	
+		$.get('/main/profile_enable/'.concat(profile))
 		//clear_graphs(0);
 
         	{% if 'graphs' in args.keys() %}
@@ -435,7 +403,7 @@
         	{% for graph in args['graphs'] %}
 
 
-		if (profiles[index].includes("{{graph}}")){
+		if (profile.includes("{{graph}}")){
         		add = $.extend( true, {}, zeroDataSet),
         		add.label = '{{graph}}_profile'
         		color = chartColors.{{graph}}[{{graph}}_]

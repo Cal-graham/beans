@@ -150,7 +150,7 @@ class SiteFrame:
                       json={"value1":message,"value2":"none","value3":"none"})
 
     def enable_profile(self, type):
-        self.profile_send = 1
+        self.profile_send = 1; print(type)
         self.profile_generate['type'].append(type); return 1
 
     def start_profile(self):
@@ -163,7 +163,7 @@ class SiteFrame:
         #    response[key] = self.filter_data[key]
         for type in self.profile_generate['type']:
             if type in self.profile_options:
-                    tmp[type] = self.get_profile(type, time())
+                    tmp[type] = self.get_profile(type, time()); print(tmp)
         return tmp
 
     def get_profile(self, type, time_):
@@ -171,7 +171,7 @@ class SiteFrame:
 
     def disable_profile(self):
         self.profile_send = 0
-        self.profile_generate['type'] = []; #del self.profile_generate['start_time'] #for key in self.filter_data.keys():
+        self.profile_generate['type'] = []; del self.profile_generate['start_time'] #for key in self.filter_data.keys():
         #    response[key] = self.filter_data[key]
         #if 'constant_temperature' in self.profile_generate['type']:
         #    tmp['temperature_profile'] = 60
@@ -187,8 +187,12 @@ class SiteFrame:
                 response['profile_name'].append(self.current_profiles[key])
         if len(type) == 0:
             return response
-        for t in range(61):
-            response['profile_data'].append(self.get_profile(type[0], time()+t))
-            response['profile_labels'].append(str(t))
+        for id in type:
+            datx = []; daty = []
+            for t in range(61):
+                datx.append(self.get_profile(type[0], time()+t))
+                daty.append(str(t))
+            response['profile_data'].append(datx)
+            response['profile_labels'].append(daty)
         return response
 

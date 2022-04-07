@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if 'graphs' in args.keys() %}
+{% for graph in args['graphs'] %}
+
+<div class="modal" id="{{graph}}_profiling">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
+      <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+        <div class="box has-background-grey-darker">
+                <div class="block" style="position:relative; height:30vh; width:30vw">
+                <canvas id="{{graph}}_profiling_chart"></canvas>
+                </div>
+        </div>
+	<div class="select" align="right">
+		<select id="{{graph}}_profiling_select">
+			<option>Profiling Options</option>
+		</select>
+	</div>
+    </section>
+    <footer class="modal-card-foot">
+    </footer>
+  </div>
+</div>
+
+{% endfor %}
+{% endif %}
+
+
+<div class="columns">
+<div class="column is-12">
+	{% if 'graphs' in args.keys() %}
+	{% for graph in args['graphs'] %}
+	<div class="box has-background-grey-darker">
+		<div class="block" style="position: relative; height:{{80/args['graphs']|length}}vh; width:100%">
+		<canvas id="{{graph}}"></canvas>
+		</div>
+	</div>
+	{% endfor %}
+	{% endif %}
+</div>
+</div>
+
+<script>
+
+    function open_modal(id){
+	document.getElementById(id).classList.add('is-active');
+    }
+
+    function close_modal(id){
+        document.getElementById(id).classList.remove('is-active');
+    }
+
+    function open_profiling(id){
+	var modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
+      		type: 'line',
+      		data: $.extend( true, {}, baselineData),
+      		options: lineOptions,
+    	});
+	modal_chart.options.legend.display = false
+        var requests = $.get('/main/profile_settings/'.concat(id));
+        var tm = requests.done(function(r){
+		modal_chart.data.labels = r['profile_labels']
+		modal_chart.data.datasets[0].data = r['profile_data']
+		modal_chart.data.datasets[0].label = r['profile_name']
+		document.getElementById(id.concat('_title')).innerHTML = r['profile_name'];
+                var select = document.getElementById(id.concat('_select'));
+		for (let i=1; i<r['profile_options'].length+1; i++){
+			select[i] = new Option(r['profile_options'][i-1], i, false, false);
+			//console.log(select)
+		};
+		modal_chart.update();
+                console.log(r)
+                open_modal(id);
+	});
+    }
+
+    function change_profile(graph, id){
+	
+    }
+
+    var record_button = document.navbar['record'];
+    var stop_button = document.navbar['stop'];
+    var profile_settings_button = document.getElementById('profile_settings_trigger');
+    stop_button.style.display = 'none';
+
+    var profile_button = document.navbar['profile'];
+    var end_button = document.navbar['end'];
+    var start_button = document.navbar['start'];
+    end_button.style.display = 'none';
+    start_button.style.display ='none';
+
+    var recording = 0;
+    var profiling = 0;
+    var profile_settings = 0;
+    var enable_refresh = 1;
+    var end_profiling = 0;
+
+    {% if 'graphs' in args.keys() %}
+    {% for graph in args['graphs'] %}
+    var {{graph}}_maintain = 0 
+    {% endfor %}
+    {% endif %}
+
+    clear_graphs = function(min){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+        while ({{graph}}.data.labels.length > min){
+                {{graph}}.data.labels.shift();
+                {{graph}}.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                });
+        }
+        //{{graph}}.data.datasets[0].data.push(0)
+        {% endfor %}
+        {% endif %}
+    }
+
+    profile_settings_button.onclick = function(){
+	if (profile_settings == 0){
+		open_modal('profile_settings');
+		profile_settings = 1;
+	}
+	else{
+		close_modal('profile_settings');
+		profile_settings = 0;
+	}
+    }
+
+    record_button.onclick = function(){
+	recording = 1;
+	console.log(recording)
+	record_button.style.display = 'none';
+	stop_button.style.display = {% extends "base.html" %}
+
+{% block content %}
+
+{% if 'graphs' in args.keys() %}
+{% for graph in args['graphs'] %}
+
+<div class="modal" id="{{graph}}_profiling">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
+      <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+        <div class="box has-background-grey-darker">
+                <div class="block" style="position:relative; height:30vh; width:30vw">
+                <canvas id="{{graph}}_profiling_chart"></canvas>
+                </div>
+        </div>
+	<div class="select" align="right">
+		<select id="{{graph}}_profiling_select">
+			<option>Profiling Options</option>
+		</select>
+	</div>
+    </section>
+    <footer class="modal-card-foot">
+    </footer>
+  </div>
+</div>
+
+{% endfor %}
+{% endif %}
+
+
+<div class="columns">
+<div class="column is-12">
+	{% if 'graphs' in args.keys() %}
+	{% for graph in args['graphs'] %}
+	<div class="box has-background-grey-darker">
+		<div class="block" style="position: relative; height:{{80/args['graphs']|length}}vh; width:100%">
+		<canvas id="{{graph}}"></canvas>
+		</div>
+	</div>
+	{% endfor %}
+	{% endif %}
+</div>
+</div>
+
+<script>
+
+    function open_modal(id){
+	document.getElementById(id).classList.add('is-active');
+    }
+
+    function close_modal(id){
+        document.getElementById(id).classList.remove('is-active');
+    }
+
+    function open_profiling(id){
+	var modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
+      		type: 'line',
+      		data: $.extend( true, {}, baselineData),
+      		options: lineOptions,
+    	});
+	modal_chart.options.legend.display = false
+        var requests = $.get('/main/profile_settings/'.concat(id));
+        var tm = requests.done(function(r){
+		modal_chart.data.labels = r['profile_labels']
+		modal_chart.data.datasets[0].data = r['profile_data']
+		modal_chart.data.datasets[0].label = r['profile_name']
+		document.getElementById(id.concat('_title')).innerHTML = r['profile_name'];
+                var select = document.getElementById(id.concat('_select'));
+		for (let i=1; i<r['profile_options'].length+1; i++){
+			select[i] = new Option(r['profile_options'][i-1], i, false, false);
+			//console.log(select)
+		};
+		modal_chart.update();
+                console.log(r)
+                open_modal(id);
+	});
+    }
+
+    function change_profile(graph, id){
+	
+    }
+
+    var record_button = document.navbar['record'];
+    var stop_button = document.navbar['stop'];
+    var profile_settings_button = document.getElementById('profile_settings_trigger');
+    stop_button.style.display = 'none';
+
+    var profile_button = document.navbar['profile'];
+    var end_button = document.navbar['end'];
+    var start_button = document.navbar['start'];
+    end_button.style.display = 'none';
+    start_button.style.display ='none';
+
+    var recording = 0;
+    var profiling = 0;
+    var profile_settings = 0;
+    var enable_refresh = 1;
+    var end_profiling = 0;
+
+    {% if 'graphs' in args.keys() %}
+    {% for graph in args['graphs'] %}
+    var {{graph}}_maintain = 0 
+    {% endfor %}
+    {% endif %}
+
+    clear_graphs = function(min){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+        while ({{graph}}.data.labels.length > min){
+                {{graph}}.data.labels.shift();
+                {{graph}}.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                });
+        }
+        //{{graph}}.data.datasets[0].data.push(0)
+        {% endfor %}
+        {% endif %}
+    }
+
+    profile_settings_button.onclick = function(){
+	if (profile_settings == 0){
+		open_modal('profile_settings');
+		profile_settings = 1;
+	}
+	else{
+		close_modal('profile_settings');
+		profile_settings = 0;
+	}
+    }
+
+    record_button.onclick = function(){
+	recording = 1;
+	console.log(recording)
+	record_button.style.display = 'none';
+	stop_button.style.display = 

@@ -17,10 +17,12 @@ atexit.register(lambda: site_frame.exit())
 @main_blueprint.route('/', methods=['GET', 'POST'])
 def index():
     HTML_args = {}
-    HTML_args['graphs'] = [] #; HTML_args['streams'] = {}
+    HTML_args['graphs'] = []; HTML_args['source'] = {}
     for key in site_frame.pins.keys():
         if key.split('_')[0] not in HTML_args['graphs']:
-            HTML_args['graphs'].append(key.split('_')[0]) #; HTML_args['streams'][key.split('_')[0]] = 0
+            HTML_args['graphs'].append(key.split('_')[0])
+            HTML_args['source'][key.split('_')[0]] = []
+        HTML_args['source'][key.split('_')[0]].append(key.split('_')[1])
         #else:
         #    HTML_args['streams'][key.split('_')[0]] += 1
     return render_template('main.html', args=HTML_args)
@@ -41,9 +43,9 @@ def read():
     return response
 
 
-@main_blueprint.route('/profile_enable/<type>', methods=['GET'])
-def profile_enable(type):
-    site_frame.enable_profile(str(type)); print(f'START: {site_frame.profile_generate}'); return '1'
+@main_blueprint.route('/profile_enable/<graph>', methods=['GET'])
+def profile_enable(graph):
+    site_frame.enable_profile(str(graph)); print(f'START: {site_frame.profile_generate}'); return '1'
     #data = site_frame.filter_data #site_frame.pull_points()
     #now = datetime.now()
     #data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
@@ -63,9 +65,25 @@ def profile_start():
     site_frame.start_profile(); print(f'START: {site_frame.profile_generate}'); return '1'
 
 
-@main_blueprint.route('/profile_settings/<type>', methods=['GET'])
-def profile_settings(type):
-    response = make_response(json.dumps(site_frame.pull_profile_settings(str(type)))); #print(data)
+@main_blueprint.route('/current_profiles', methods=['GET'])
+def current_profiles():
+    data = [site_frame.current_profiles[key] for key in site_frame.current_profiles.keys()]
+    response = make_response(json.dumps(data)); #print(data)
     response.content_type = 'application/json'; #print(f'END: {time()}')
     return response
 
+
+@main_blueprint.route('/profile_settings/<graph>', methods=['GET'])
+def profile_settings(graph):
+    response = make_response(json.dumps(site_frame.pull_profile_settings(str(graph)))); #print(data)
+    response.content_type = 'application/json'; #print(f'END: {time()}')
+    return response
+
+
+@main_blueprint.route('/profile_change/<graph>/<source>/<id>', methods=['GET'])
+def profile_change(graph, source, id):
+    for key in site_frame.current_profiles.keys():
+        if str(graph) in key:
+            if str(source) in key:
+                site_frame.current_profiles[key] = str(id)
+    return '1'

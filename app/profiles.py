@@ -22,7 +22,7 @@ def constant_pressure(gen, time_):
 
 @check_start
 def light_roast_pressure(gen, time_):
-    if time() - gen['start_time'] < 18:
+    if time_ - gen['start_time'] < 18:
         return ( 0.093*(time_ - gen['start_time']) )**4 + 1
     else:
         return ( -0.0023*( (time_ - gen['start_time']) - 18)**2 ) + 9
