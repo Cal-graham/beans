@@ -80,8 +80,11 @@ def profile_settings(graph):
     return response
 
 
+@main_blueprint.route('/profile_change/<graph>/<source>/<id>/<X>', methods=['GET'])
 @main_blueprint.route('/profile_change/<graph>/<source>/<id>', methods=['GET'])
-def profile_change(graph, source, id):
+def profile_change(graph, source, id, X=-1000):
+    if X != -1000:
+        site_frame.profile_generate[id] = X; print(site_frame.profile_generate)
     for key in site_frame.current_profiles.keys():
         if str(graph) in key:
             if str(source) in key:

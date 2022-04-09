@@ -14,7 +14,7 @@
     </header>
     <section class="modal-card-body">
         <div class="box has-background-grey-darker">
-                <div class="block" style="position:relative; height:30vh; width:50vw">
+                <div class="block" style="position:relative; height:30vh; width:50vh">
                 <canvas id="{{graph}}_profiling_chart"></canvas>
                 </div>
         </div>
@@ -57,6 +57,8 @@
 
 <script>
 
+    var modal_chart;
+
     function open_modal(id){
 	document.getElementById(id).classList.add('is-active');
     }
@@ -67,7 +69,7 @@
 
     function open_profiling(id){
 	console.log(id)
-	var modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
+	globalThis.modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
       		type: 'line',
 		data: {},
       		options: lineOptions,
@@ -81,6 +83,18 @@
 			modal_chart.data.datasets[index] = $.extend(true, {}, zeroDataSet)
 			modal_chart.data.datasets[index].data = r['profile_data'][index]
         	        modal_chart.data.datasets[index].label = element
+			{% if 'graphs' in args.keys() %}
+        		{% for graph in args['graphs'] %}
+				if (id.includes('{{graph}}')){
+					modal_chart.data.datasets[index].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb', 'rgba'),
+                                        modal_chart.data.datasets[index].borderColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[index].pointBorderColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[index].pointBackgroundColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[index].outerGlowColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[index].shadowColor = chartColors.{{graph}}[index]
+				}
+        		{% endfor %}
+        		{% endif %}
 		}
 		//modal_chart.data.datasets[0].data = r['profile_data']
 		//modal_chart.data.datasets[0].label = r['profile_name']
@@ -108,7 +122,17 @@
     function change_profile(graph, source){
 	var select_form = document.getElementById(graph.concat('_profiling_').concat(source).concat('_select'));
 	var id = select_form.options[select_form.selectedIndex].value;
-	var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
+	if (id.includes('X')){
+		let val = prompt("Please enter value")
+		if (val != null){
+			var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id).concat('/').concat(val))	
+		} else {
+			var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
+		}
+	} else{
+		var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
+	}
+	modal_chart.destroy();
 	close_modal(graph.concat('_profiling'))
 	open_profiling(graph.concat('_profiling'))
     }
@@ -209,7 +233,9 @@
     end_profiles = function(){
         {% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
-        for (i = {{graph}}_maintain; i < {{graph}}.data.datasets.length; i++){
+	console.log({{graph}}_maintain)
+	console.log({{graph}}.data.datasets.length)
+        for (i = {{graph}}_maintain; i <= {{graph}}.data.datasets.length; i++){
                 {{graph}}.data.datasets.pop();
         }
         {% endfor %}
@@ -431,8 +457,10 @@
         	{% endfor %}
         	{% endif %}
 
-        	{% if 'graphs' in args.keys() %}
+        	{% if 'graphs' in args.keys() and 'source' in args.keys() %}
         	{% for graph in args['graphs'] %}
+                {% for source in args['source'][graph] %}
+
 
 
 		if (profiles[index].includes("{{graph}}")){
@@ -459,6 +487,7 @@
 		}
 
         	{% endfor %}
+		{% endfor %}
         	{% endif %}
 	}
     enable_refresh = 1

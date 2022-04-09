@@ -167,7 +167,7 @@ class SiteFrame:
         return tmp
 
     def get_profile(self, type, time_):
-        return getattr(profiles, type)(self.profile_generate, time_)
+        print(self.profile_generate); return getattr(profiles, type)(self.profile_generate, time_)
 
     def disable_profile(self):
         self.profile_send = 0
@@ -187,12 +187,12 @@ class SiteFrame:
                 response['profile_name'].append(self.current_profiles[key])
         if len(type) == 0:
             return response
-        for id in type:
+        for idx, id in enumerate(type):
             datx = []; daty = []
             for t in range(61):
-                datx.append(self.get_profile(type[0], time()+t))
+                datx.append(self.get_profile(type[idx], time()+t))
                 daty.append(str(t))
             response['profile_data'].append(datx)
             response['profile_labels'].append(daty)
-        return response
+        print(response); return response
 
