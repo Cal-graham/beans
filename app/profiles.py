@@ -5,8 +5,9 @@ import numpy as np
 def check_start(func):
     def wrapper(gen, time_):
         if 'start_time' not in gen.keys():
-            gen['start_time'] = time()
-            return func(gen, time_)
+            tmp = gen.copy()
+            tmp['start_time'] = time()
+            return func(tmp, time_)
         elif (time_ - gen['start_time']) > 60 :
             return 0
         else:
@@ -22,7 +23,7 @@ def constant_temperature(gen, time_):
 @check_start
 def constant_temperature_X(gen, time_):
     if 'constant_temperature_X' not in gen.keys():
-        print([key for key in gen.keys()]); return constant_temperature(gen, time_)
+        return constant_temperature(gen, time_)
     return gen['constant_temperature_X']
 
 

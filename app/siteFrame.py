@@ -163,18 +163,18 @@ class SiteFrame:
         #    response[key] = self.filter_data[key]
         for type in self.profile_generate['type']:
             if type in self.profile_options:
-                    tmp[type] = self.get_profile(type, time()); print(tmp)
+                    tmp[type] = self.get_profile(type, time()); #print(tmp)
         return tmp
 
     def get_profile(self, type, time_):
-        print(self.profile_generate); return getattr(profiles, type)(self.profile_generate, time_)
+        return getattr(profiles, type)(self.profile_generate, time_)
 
     def disable_profile(self):
         self.profile_send = 0
-        self.profile_generate['type'] = []; del self.profile_generate['start_time'] #for key in self.filter_data.keys():
+        self.profile_generate['type'] = []; #del self.profile_generate['start_time'] #for key in self.filter_data.keys():
         #    response[key] = self.filter_data[key]
-        #if 'constant_temperature' in self.profile_generate['type']:
-        #    tmp['temperature_profile'] = 60
+        if 'start_time' in self.profile_generate.keys():
+            del self.profile_generate['start_time'] #tmp['temperature_profile'] = 60
         #if 'constant_pressure' in self.profile_generate['type']:
         #    tmp['pressure_profile'] = 16
         return 1
@@ -194,5 +194,5 @@ class SiteFrame:
                 daty.append(str(t))
             response['profile_data'].append(datx)
             response['profile_labels'].append(daty)
-        print(response); return response
+        return response
 
