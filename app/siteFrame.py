@@ -4,7 +4,7 @@ from inspect import getmembers, isfunction
 import threading
 import numpy as np
 import requests
-import profiles
+from profiles import Profiles
 
 
 if 1:
@@ -33,7 +33,8 @@ class SiteFrame:
         'temperature_boiler': '1.2',
         'flow_grouphead': '1.3'
     }; profile_send = 0; profile_generate = {'type': []}; profile_start = 0;
-    profile_options = dir(profiles) #profile_options = getmembers(profiles, isfunction)
+    profiles = Profiles()
+    profile_options = [method for method in dir(profiles)] #profile_options = getmembers(profiles, isfunction)
     current_profiles = {
         'pressure_boiler': 'constant_pressure',
         'temperature_grouphead': 'constant_temperature',
@@ -167,7 +168,7 @@ class SiteFrame:
         return tmp
 
     def get_profile(self, type, time_):
-        return getattr(profiles, type)(self.profile_generate, time_)
+        return getattr(self.profiles, type)(self.profile_generate, time_)
 
     def disable_profile(self):
         self.profile_send = 0
