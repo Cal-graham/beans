@@ -90,3 +90,18 @@ def profile_change(graph, source, id, X=-1000):
             if str(source) in key:
                 site_frame.current_profiles[key] = str(id)
     return '1'
+
+
+@main_blueprint.route('live_graph')
+def live_graph():
+    HTML_args = {}
+    HTML_args['graphs'] = []; HTML_args['source'] = {}
+    for key in site_frame.pins.keys():
+        if key.split('_')[0] not in HTML_args['graphs']:
+            HTML_args['graphs'].append(key.split('_')[0])
+            HTML_args['source'][key.split('_')[0]] = []
+        HTML_args['source'][key.split('_')[0]].append(key.split('_')[1])
+        #else:
+        #    HTML_args['streams'][key.split('_')[0]] += 1
+    return render_template('live_graph.html', args=HTML_args)
+
