@@ -1,0 +1,66 @@
+{% extends "base.html"  %}
+
+{% block content %}
+
+
+<body>
+  <div class="box">
+  <canvas id="chartJSContainer" style="height: 90%; width: 90%;"></canvas>
+  </div>
+  <script>
+    var crt = {
+      type: 'Scatter      data: {
+        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+        datasets: [{
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2, 3],
+            fill: true,
+            tension: 0.4,
+            borderWidth: 1,
+            pointHitRadius: 25
+          },
+          {
+            label: '# of Points',
+            data: [7, 11, 5, 8, 3, 7],
+            fill: true,
+            tension: 0.4,
+            borderWidth: 1,
+            pointHitRadius: 25
+          }
+        ]
+      },
+      options: {
+	tooltips: {enabled: true},
+        scales: {
+          y: {
+            min: 0,
+            max: 20
+          }
+        },
+        //onHover: function(e) {
+        //  const point = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+        //  if (point.length) e.native.target.style.cursor = 'grab'
+        //  else e.native.target.style.cursor = 'default'
+        //},
+        dragData: true,
+	onDragStart: function(e, datasetIndex, index, value) {
+        // console.log(e)
+        },
+        onDrag: function(e, datasetIndex, index, value) {              
+        e.target.style.cursor = 'grabbing'
+        // console.log(e, datasetIndex, index, value)
+        },
+        onDragEnd: function(e, datasetIndex, index, value) {
+        e.target.style.cursor = 'default' 
+        // console.log(datasetIndex, index, value)
+        
+	}
+      }
+    }
+
+    var line_chart = document.getElementById('chartJSContainer').getContext('2d');
+    window.test = new Chart(line_chart, crt);
+  </script>
+</body>
+
+{% endblock %}

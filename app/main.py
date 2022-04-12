@@ -105,3 +105,9 @@ def live_graph():
         #    HTML_args['streams'][key.split('_')[0]] += 1
     return render_template('live_graph.html', args=HTML_args)
 
+
+@main_blueprint.route('/submit_custom_profile/<dat>', methods=['GET'])
+def submit_custom_profile(dat):
+    xdat = str(dat).split('|')[0].split(',')
+    ydat = str(dat).split('|')[1].split(',')
+    return '1'

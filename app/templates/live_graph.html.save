@@ -12,26 +12,22 @@
 
 function submit(){
 	$.get(
-   	url="submit_custom_profile/".concat(get_scatter_data(scatterChart)),
-   	//data={custom_profile_data:get_scatter_data(scatterChart)}, 
-   	//console.log(get_scatter_data(scatterChart)),
-	success=function(data) {
+   	 url="submit_custom_profile",
+   	 data={'custom_profile_data':scatterChart.data.datasets[0].data}, 
+   	 success=function(data) {
    	    console.log(data);
 	    console.log(scatterChart.data.datasets[0].data);
     	}
 	);
 }
 
-function get_scatter_data(chart){
-	let x = ''
-	let y = ''
-	for (const index in chart.data.datasets[0].data){
-    		x+=chart.data.datasets[0].data[index].x;	
-		y+=chart.data.datasets[0].data[index].y;
-		x+=',';
-		y+=',';
+function grab_scatter_data(chart){
+	const x = []
+	const y = []
+	for (const index in scatterChart.data.datasets[0].data){
+		x.push()
+		y.push()
 	}
-	return x+'|'+y
 }
 
 var ctx = document.getElementById('chartJSContainer').getContext('2d');
