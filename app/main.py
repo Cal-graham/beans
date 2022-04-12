@@ -75,6 +75,7 @@ def current_profiles():
 
 @main_blueprint.route('/profile_settings/<graph>', methods=['GET'])
 def profile_settings(graph):
+    print((site_frame.pull_profile_settings(str(graph))));
     response = make_response(json.dumps(site_frame.pull_profile_settings(str(graph)))); #print(data)
     response.content_type = 'application/json'; #print(f'END: {time()}')
     return response
@@ -92,7 +93,7 @@ def profile_change(graph, source, id, X=-1000):
     return '1'
 
 
-@main_blueprint.route('live_graph')
+@main_blueprint.route('/live_graph')
 def live_graph():
     HTML_args = {}
     HTML_args['graphs'] = []; HTML_args['source'] = {}
@@ -106,8 +107,18 @@ def live_graph():
     return render_template('live_graph.html', args=HTML_args)
 
 
-@main_blueprint.route('/submit_custom_profile/<dat>', methods=['GET'])
-def submit_custom_profile(dat):
-    xdat = str(dat).split('|')[0].split(',')
-    ydat = str(dat).split('|')[1].split(',')
+@main_blueprint.route('/current_custom_profiling/<graph>/<source>', methods=['GET'])
+def current_custom_profiling(graph, source):
+    response = make_response(json.dumps(site_frame.profiles.current_custom_profile(str(graph),str(source)))); #print(data)
+    response.content_type = 'application/json'; #print(f'END: {time()}')
+    return response
+
+
+@main_blueprint.route('/submit_custom_profile/<graph>/<source>/<xdat>/<ydat>', methods=['GET'])
+def submit_custom_profile(graph, source, xdat, ydat):
+    xdata = [float(x) for x in str(xdat).split(',') if x]; print(xdat)
+    ydata = [float(y) for y in str(ydat).split(',') if y]
+    site_frame.profiles.custom_profiles[str(graph)][str(source)] = [xdata,ydata]
+    site_frame.profiles.gen_custom_profile_functions()
+    site_frame.current_profiles[str(graph)+'_'+str(source)] = 'custom_'+str(graph)+'_'+str(source)
     return '1'

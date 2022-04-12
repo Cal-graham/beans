@@ -28,7 +28,7 @@ class SiteFrame:
     smoothing_thread = None
     adc = []
     pins = {
-        'pressure_boiler': '1.0',
+        'pressure_grouphead': '1.0',
         'temperature_grouphead': '1.1',
         'temperature_boiler': '1.2',
         'flow_grouphead': '1.3'
@@ -36,10 +36,10 @@ class SiteFrame:
     profiles = Profiles()
     profile_options = [method for method in dir(profiles)] #profile_options = getmembers(profiles, isfunction)
     current_profiles = {
-        'pressure_boiler': 'constant_pressure',
-        'temperature_grouphead': 'constant_temperature',
-        'temperature_boiler': 'constant_temperature',
-        'flow_grouphead': 'constant_flow'
+        'pressure_grouphead': 'constant_pressure_grouphead',
+        'temperature_grouphead': 'constant_temperature_grouphead',
+        'temperature_boiler': 'constant_temperature_boiler',
+        'flow_grouphead': 'constant_flow_grouphead'
     };
 
 
@@ -163,11 +163,13 @@ class SiteFrame:
         #for key in self.filter_data.keys():
         #    response[key] = self.filter_data[key]
         for type in self.profile_generate['type']:
-            if type in self.profile_options:
-                    tmp[type] = self.get_profile(type, time()); #print(tmp)
+            #if type in self.profile_options:
+            tmp[type] = self.get_profile(type, time()); #print(tmp)
         return tmp
 
     def get_profile(self, type, time_):
+        if 'custom' in type:
+            return self.profiles.custom_profile(self.profile_generate, time_, type)
         return getattr(self.profiles, type)(self.profile_generate, time_)
 
     def disable_profile(self):

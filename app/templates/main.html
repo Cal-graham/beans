@@ -9,7 +9,13 @@
   <div class="modal-background"></div>
   <div class="modal-card">
     <header class="modal-card-head">
-      <p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
+	{% if 'source' in args.keys() %}
+	{% for source in args['source'][graph] %}
+      	<button id="open_custom_profiling_button" class="button is-info" onclick="open_custom_profiling('{{graph}}','{{source}}');">Custom Profiling</button>
+	<button id="set_custom_profiling_button" class="button is-info" onclick="set_custom_profile('{{graph}}','{{source}}')">Set Custom Profile</button>
+      	{% endfor %}
+        {% endif %}
+	<p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
       <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
     </header>
     <section class="modal-card-body">
@@ -56,6 +62,82 @@
 </div>
 
 <script>
+
+    var set_custom_profiling_button = document.getElementById('set_custom_profiling_button');
+    set_custom_profiling_button.style.display = 'none';
+    var open_custom_profiling_button = document.getElementById('open_custom_profiling_button');
+
+	function set_custom_profile(graph, source){
+        	$.get("submit_custom_profile/".concat(graph).concat('/').concat(source).concat(get_scatter_data(modal_chart)));
+		$.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat('custom_').concat(graph).concat('_').concat(source))
+		modal_chart.destroy();
+	        open_custom_profiling_button.style.display = 'inline';
+	        set_custom_profiling_button.style.display = 'none';
+		open_profiling(graph.concat('_profiling'))
+	}
+
+	function get_scatter_data(chart){
+        	let x = '/'
+        	let y = '/'
+        	for (const index in chart.data.datasets[0].data){
+	                x+=chart.data.datasets[0].data[index].x;
+        	        y+=chart.data.datasets[0].data[index].y;
+	                x+=',';
+	                y+=',';
+	        }
+	        return x+y
+	}
+	
+    function open_custom_profiling(graph, source){
+	modal_chart.destroy();
+	open_custom_profiling_button.style.display = 'none';
+	set_custom_profiling_button.style.display = 'inline';
+	request = $.get('current_custom_profiling/'.concat(graph).concat('/').concat(source));
+        var tm = request.done(function(r){
+	
+		console.log(r)
+        	globalThis.modal_chart = new Chart(document.getElementById(graph.concat('_profiling_chart')), {
+        	        type: 'scatter',
+        	        data: {
+        	                datasets: [{
+        	                        label: graph.concat(' - ').concat(source),
+        	                        pointRadius: 10,
+        	                        showLine: true,
+        	                        data: r
+        	                }]
+        	        },
+        	        options: liveScatterOptions,
+        	});
+			var index = 0
+			{% if 'graphs' in args.keys() and 'source' in args.keys() %}
+			{% for graph in args['graphs'] %}
+			if (graph.includes('{{graph}}')){
+				{% for source in args['source'][graph] %}
+				if (source.includes('{{source}}')){
+                                        modal_chart.data.datasets[0].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb','rgba')
+                                        modal_chart.data.datasets[0].borderColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[0].pointBorderColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[0].pointBackgroundColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[0].outerGlowColor = chartColors.{{graph}}[index],
+                                        modal_chart.data.datasets[0].shadowColor = chartColors.{{graph}}[index]
+                                } else {
+					index += 1
+				}
+				{% endfor %}
+			}
+                        {% endfor %}
+                        {% endif %}
+
+        	modal_chart.update();
+        	console.log(modal_chart.data.datasets[0].data)
+        	//modal_chart.update();
+		});
+    }
+
+    var liveScatterOptions = {
+	dragData: true,
+        dragX: true,	
+    }
 
     var modal_chart;
 
@@ -134,6 +216,7 @@
 	}
 	modal_chart.destroy();
 	close_modal(graph.concat('_profiling'))
+	sleep(200)
 	open_profiling(graph.concat('_profiling'))
     }
 
