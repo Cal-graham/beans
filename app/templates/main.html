@@ -9,12 +9,6 @@
   <div class="modal-background"></div>
   <div class="modal-card">
     <header class="modal-card-head">
-	{% if 'source' in args.keys() %}
-	{% for source in args['source'][graph] %}
-      	<button id="open_custom_profiling_button" class="button is-info" onclick="open_custom_profiling('{{graph}}','{{source}}');">Custom Profiling</button>
-	<button id="set_custom_profiling_button" class="button is-info" onclick="set_custom_profile('{{graph}}','{{source}}')">Set Custom Profile</button>
-      	{% endfor %}
-        {% endif %}
 	<p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
       <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
     </header>
@@ -63,83 +57,17 @@
 
 <script>
 
-    var set_custom_profiling_button = document.getElementById('set_custom_profiling_button');
-    set_custom_profiling_button.style.display = 'none';
-    var open_custom_profiling_button = document.getElementById('open_custom_profiling_button');
-
-	function set_custom_profile(graph, source){
-        	$.get("submit_custom_profile/".concat(graph).concat('/').concat(source).concat(get_scatter_data(modal_chart)));
-		$.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat('custom_').concat(graph).concat('_').concat(source))
-		modal_chart.destroy();
-	        open_custom_profiling_button.style.display = 'inline';
-	        set_custom_profiling_button.style.display = 'none';
-		open_profiling(graph.concat('_profiling'))
+    function get_scatter_data(chart){
+	let x = '/'
+	let y = '/'
+	for (const index in chart.data.datasets[0].data){
+		x+=chart.data.datasets[0].data[index].x;
+		y+=chart.data.datasets[0].data[index].y;
+		x+=',';
+		y+=',';
 	}
-
-	function get_scatter_data(chart){
-        	let x = '/'
-        	let y = '/'
-        	for (const index in chart.data.datasets[0].data){
-	                x+=chart.data.datasets[0].data[index].x;
-        	        y+=chart.data.datasets[0].data[index].y;
-	                x+=',';
-	                y+=',';
-	        }
-	        return x+y
-	}
-	
-    function open_custom_profiling(graph, source){
-	modal_chart.destroy();
-	open_custom_profiling_button.style.display = 'none';
-	set_custom_profiling_button.style.display = 'inline';
-	request = $.get('current_custom_profiling/'.concat(graph).concat('/').concat(source));
-        var tm = request.done(function(r){
-	
-		console.log(r)
-        	globalThis.modal_chart = new Chart(document.getElementById(graph.concat('_profiling_chart')), {
-        	        type: 'scatter',
-        	        data: {
-        	                datasets: [{
-        	                        label: graph.concat(' - ').concat(source),
-        	                        pointRadius: 10,
-        	                        showLine: true,
-        	                        data: r
-        	                }]
-        	        },
-        	        options: liveScatterOptions,
-        	});
-			var index = 0
-			{% if 'graphs' in args.keys() and 'source' in args.keys() %}
-			{% for graph in args['graphs'] %}
-			if (graph.includes('{{graph}}')){
-				{% for source in args['source'][graph] %}
-				if (source.includes('{{source}}')){
-                                        modal_chart.data.datasets[0].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb','rgba')
-                                        modal_chart.data.datasets[0].borderColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[0].pointBorderColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[0].pointBackgroundColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[0].outerGlowColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[0].shadowColor = chartColors.{{graph}}[index]
-                                } else {
-					index += 1
-				}
-				{% endfor %}
-			}
-                        {% endfor %}
-                        {% endif %}
-
-        	modal_chart.update();
-        	console.log(modal_chart.data.datasets[0].data)
-        	//modal_chart.update();
-		});
+	return x+y
     }
-
-    var liveScatterOptions = {
-	dragData: true,
-        dragX: true,	
-    }
-
-    var modal_chart;
 
     function open_modal(id){
 	document.getElementById(id).classList.add('is-active');
@@ -147,77 +75,6 @@
 
     function close_modal(id){
         document.getElementById(id).classList.remove('is-active');
-    }
-
-    function open_profiling(id){
-	console.log(id)
-	globalThis.modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
-      		type: 'line',
-		data: {},
-      		options: lineOptions,
-    	});
-	modal_chart.options.legend.display = false
-        var requests = $.get('/main/profile_settings/'.concat(id));
-        var tm = requests.done(function(r){
-		
-		modal_chart.data.labels = r['profile_labels'][0]
-		for (const [index, element] of r['profile_name'].entries()){
-			modal_chart.data.datasets[index] = $.extend(true, {}, zeroDataSet)
-			modal_chart.data.datasets[index].data = r['profile_data'][index]
-        	        modal_chart.data.datasets[index].label = element
-			{% if 'graphs' in args.keys() %}
-        		{% for graph in args['graphs'] %}
-				if (id.includes('{{graph}}')){
-					modal_chart.data.datasets[index].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb', 'rgba'),
-                                        modal_chart.data.datasets[index].borderColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[index].pointBorderColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[index].pointBackgroundColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[index].outerGlowColor = chartColors.{{graph}}[index],
-                                        modal_chart.data.datasets[index].shadowColor = chartColors.{{graph}}[index]
-				}
-        		{% endfor %}
-        		{% endif %}
-		}
-		//modal_chart.data.datasets[0].data = r['profile_data']
-		//modal_chart.data.datasets[0].label = r['profile_name']
-		document.getElementById(id.concat('_title')).innerHTML = r['profile_name'];
-		{% if 'graphs' in args.keys() and 'source' in args.keys() %}
-		{% for graph in args['graphs'] %}
-		if (id.includes('{{graph}}')){
-                {% for source in args['source'][graph] %}
-                var select = document.getElementById(id.concat('_{{source}}').concat('_select'));
-		for (let i=1; i<r['profile_options'].length+1; i++){
-			select[i] = new Option(r['profile_options'][i-1], r['profile_options'][i-1], false, false);
-			//console.log(select)
-		};		
-                {% endfor %}
-                }
-                {% endfor %}
-                {% endif %}
-
-		modal_chart.update();
-                console.log(r)
-                open_modal(id);
-	});
-    }
-
-    function change_profile(graph, source){
-	var select_form = document.getElementById(graph.concat('_profiling_').concat(source).concat('_select'));
-	var id = select_form.options[select_form.selectedIndex].value;
-	if (id.includes('X')){
-		let val = prompt("Please enter value")
-		if (val != null){
-			var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id).concat('/').concat(val))	
-		} else {
-			var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
-		}
-	} else{
-		var requests = $.get('/main/profile_change/'.concat(graph).concat('/').concat(source).concat('/').concat(id))
-	}
-	modal_chart.destroy();
-	close_modal(graph.concat('_profiling'))
-	sleep(200)
-	open_profiling(graph.concat('_profiling'))
     }
 
     var record_button = document.navbar['record'];
@@ -232,41 +89,7 @@
     start_button.style.display ='none';
 
     var recording = 0;
-    var profiling = 0;
-    var profile_settings = 0;
     var enable_refresh = 1;
-    var end_profiling = 0;
-
-    {% if 'graphs' in args.keys() %}
-    {% for graph in args['graphs'] %}
-    var {{graph}}_maintain = 0 
-    {% endfor %}
-    {% endif %}
-
-    clear_graphs = function(min){
-	{% if 'graphs' in args.keys() %}
-        {% for graph in args['graphs'] %}
-        while ({{graph}}.data.labels.length > min){
-                {{graph}}.data.labels.shift();
-                {{graph}}.data.datasets.forEach((dataset) => {
-                        dataset.data.shift();
-                });
-        }
-        //{{graph}}.data.datasets[0].data.push(0)
-        {% endfor %}
-        {% endif %}
-    }
-
-    profile_settings_button.onclick = function(){
-	if (profile_settings == 0){
-		open_modal('profile_settings');
-		profile_settings = 1;
-	}
-	else{
-		close_modal('profile_settings');
-		profile_settings = 0;
-	}
-    }
 
     record_button.onclick = function(){
 	recording = 1;
@@ -281,19 +104,6 @@
         stop_button.style.display = 'none';
         record_button.style.display = 'inline';
         clear_graphs(400);
-    }
-
-    profile_button.onclick = function(){
-        profiling = 1;
-	var request = $.get('/main/current_profiles')
-	var tm = request.done(function(r){
-		profile(r)
-	});
-	//profile({'constant_temperature':1, 'constant_pressure':2})
-        console.log('profiling...')
-        profile_button.style.display = 'none';
-        end_button.style.display = 'inline';
-	start_button.style.display = 'inline';
     }
 
     start_button.onclick = function(){
@@ -312,22 +122,9 @@
 	$.get('/main/profile_disable')
 	console.log('stopped')
     }
-
-    end_profiles = function(){
-        {% if 'graphs' in args.keys() %}
-        {% for graph in args['graphs'] %}
-	console.log({{graph}}_maintain)
-	console.log({{graph}}.data.datasets.length)
-        for (i = {{graph}}_maintain; i <= {{graph}}.data.datasets.length; i++){
-                {{graph}}.data.datasets.pop();
-        }
-        {% endfor %}
-        {% endif %}
-	end_profiling = 0
-    }
 	 
     var chartColors = {
-        pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)' ],
+        pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'],
         flow: ['rgb(0, 100, 255)', 'rgb(0, 0, 255)'],
         temperature: ['rgb(255, 0, 100)', 'rgb(255, 100, 0)']
     };
@@ -348,17 +145,49 @@
         shadowBlur: 10,
         shadowColor: chartColors.pressure[0]
     };
-	    
-    var baselineData = {
-      labels: [''],
-      datasets: [
-	$.extend( true, {}, zeroDataSet),
-	]
-    };
+	 
+    dataset = function(graph, idx){
+	color = "rgb('255', '255', '255')"
+	{% if 'graphs' in args.keys() %}    
+	{% for graph in args['graphs'] %}
+	if (graph.includes('{{graph}}'){
+		add = $.extend( true, {}, zeroDataSet),
+		add.label = graph
+		color = chartColors.{{graph}}[idx]
+		add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
+		add.borderColor = color
+		add.pointBorderColor = color
+		add.pointBackgroundColor = color
+		add.fill = true
+		add.pointRadius = 0
+		add.outerGlowWidth = 40
+		add.outerGlowColor = color
+		add.shadowBlur = 10
+		add.shadowColor = color    
+		return add
+	}
+	{% endfor %}
+        {% endif %}
+    }
 	
-    var lineOptions = {
+    clear_graphs = function(min){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+        while ({{graph}}.data.labels.length > min){
+                {{graph}}.data.labels.shift();
+                {{graph}}.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                });
+        }
+        {% endfor %}
+        {% endif %}
+    }
+	 
+    var chartOptions = {
         maintainAspectRatio: false,
         animation: false,
+	dragData: true,
+        dragX: true,	
         layout: {
             padding:{
 		left: 0,
@@ -384,33 +213,28 @@
                	display: false,
 		position: 'right'
 	}
-        }
+    }
 
     {% if 'graphs' in args.keys() %}
     {% for graph in args['graphs'] %}
-	
-    var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
-      type: 'line',
-      data: $.extend( true, {}, baselineData),
-      options: lineOptions,
-    });
-     
+	var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
+	      	data: {
+			labels: [],
+			datasets: []
+		 },
+	      	options: chartOptions,
+	});
+    var {{graph}}_maintain = 0 
     {% endfor %}
     {% endif %}
 
     var refresh = function(){
-
-	//console.log('reading...')	
-
 	while (enable_refresh == 0){
 		sleep(100);
 	}
-
 	try{
-
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		//console.log(r)
 		{% if 'graphs' in args.keys() %}
     		{% for graph in args['graphs'] %}
 		var {{graph}}_ = 0
@@ -418,14 +242,12 @@
     		{% endif %}
 		temps = [];
        		for (const [key, value] of Object.entries(r)){
-			
 			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
 			if (key.includes("{{graph}}") && enable_refresh == 1){
 				console.log({{graph}}_)
 				{{graph}}.data.datasets[{{graph}}_].data.push(value)
-				{{graph}}_ = {{graph}}_ + 1				
-				//console.log(key, lineChart0.data.datasets[{{graph}}_].data)
+				{{graph}}_ = {{graph}}_ + 1
 			}
                 	{% endfor %}
                 	{% endif %}
@@ -435,14 +257,11 @@
                                 {{graph}}.data.labels.push(value)
                                 if ( (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
                                         {{graph}}.data.labels.shift();
-					{{graph}}_count = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
-						//if ({{graph}}_count < {{graph}}_maintain){
+						if (dataset.type == 'line'){
                                                 	dataset.data.shift();
-							{{graph}}_count = {{graph}}_count + 1
-						//}
+						}
                                         });
-                                        //{{graph}}.data.datasets[0].data.push(0)
                                 }
                         	{% endfor %}
                         	{% endif %}
@@ -453,23 +272,12 @@
 		{{graph}}.update();
 		{% endfor %}
     		{% endif %}
-	//sleep(500);
-	//refresh();
-
-	if (end_profiling == 1){
-		end_profiles();
-	}
-
 	setTimeout(refresh, 100);
         });
-
 	} catch(err) {
-
-	console.log(err)
-	refresh();
-
+		console.log(err)
+		refresh();
 	}
-
     }
     
     var init = function(){
@@ -480,40 +288,39 @@
 		var {{graph}}_ = 0
 		{% endfor %}
     		{% endif %}
-		color = 'rgb(255,255,255)'
-		temps = [];
        		for (const [key, value] of Object.entries(r)){
-			{% if 'graphs' in args.keys() %}
+			{% if 'graphs' in args.keys() and 'sources' in args.keys() %}
     			{% for graph in args['graphs'] %}
+			{% for source in args['sources'] %}
 			if (key.includes("{{graph}}")){
-				add = $.extend( true, {}, zeroDataSet),
-				add.label = key
-				color = chartColors.{{graph}}[{{graph}}_]
-				add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
-				add.borderColor = color
-				add.pointBorderColor = color
-				add.pointBackgroundColor = color
-				add.fill = true
-				add.pointRadius = 0
-				add.outerGlowWidth = 40
-				add.outerGlowColor = color
-				add.shadowBlur = 10
-				add.shadowColor = color
+				add = dataset("graph", {{graph}}_)
+				dataset.type = 'line'
 				{{graph}}.data.datasets[{{graph}}_] = (add)
 				{{graph}}_ = {{graph}}_ + 1
-				{{graph}}_maintain = {{graph}}_
 			}
+			{% endfor %}
+			{% endfor %}
+    			{% endif %}
+			{% if 'graphs' in args.keys() and 'sources' in args.keys() %}
+    			{% for graph in args['graphs'] %}
+			{% for source in args['sources'] %}
+			if (key.includes("{{graph}}")){
+				add = dataset("graph", {{graph}}_)
+				dataset.type = 'scatter'
+				{{graph}}.data.datasets[{{graph}}_] = (add)
+				{{graph}}_ = {{graph}}_ + 1
+			}
+			{% endfor %}
 			{% endfor %}
     			{% endif %}
 		}
-		{% if 'graphs' in args.keys() %}
-    		{% for graph in args['graphs'] %}
-		{{graph}}.update();
-		{% endfor %}
-		console.log({{args['graphs'][-1]}}.options.scales);
-		{{args['graphs'][-1]}}.options.scales.xAxes[0].display = true
-		{{args['graphs'][-1]}}.update();
-    		{% endif %}
+		//{% if 'graphs' in args.keys() %}
+    		//{% for graph in args['graphs'] %}
+		//{{graph}}.update();
+		//{{graph}}.options.scales.xAxes[0].display = true
+		//{{graph}}.update();
+		//{% endfor %}
+    		//{% endif %}
         });
     }
 
@@ -523,59 +330,6 @@
 
     init();
     refresh();
-
-    profile = function(profiles){
-	console.log(profiles)
-	enable_refresh = 0 
-	for (var index=0; index<profiles.length; index++){
-		
-		sleep(100)
-		console.log(profiles[index])	
-		$.get('/main/profile_enable/'.concat(profiles[index]))
-		//clear_graphs(0);
-
-        	{% if 'graphs' in args.keys() %}
-        	{% for graph in args['graphs'] %}
-        	var {{graph}}_ = 0
-        	{% endfor %}
-        	{% endif %}
-
-        	{% if 'graphs' in args.keys() and 'source' in args.keys() %}
-        	{% for graph in args['graphs'] %}
-                {% for source in args['source'][graph] %}
-
-
-
-		if (profiles[index].includes("{{graph}}")){
-        		add = $.extend( true, {}, zeroDataSet),
-        		add.label = '{{graph}}_profile'
-        		color = chartColors.{{graph}}[{{graph}}_]
-        		add.backgroundColor = 'rgba(0,0,0,0)'
-        		add.borderColor = color
-        		add.pointBorderColor = color
-        		add.pointBackgroundColor = color
-        		add.fill = false
-        		add.pointRadius = 0
-        		add.outerGlowWidth = 40
-        		add.outerGlowColor = color
-        		add.shadowBlur = 10
-        		add.shadowColor = color
-        		add.borderDash = [10,5]
-        		add.data = new Array({{graph}}.data.datasets[0].data.length).fill(0);
-        		//console.log(add)
-
-       		 	{{graph}}.data.datasets[{{graph}}_maintain + {{graph}}_] = (add)
-        		{{graph}}.update();
-			{{graph}}_ = {{graph}}_ + 1
-		}
-
-        	{% endfor %}
-		{% endfor %}
-        	{% endif %}
-	}
-    enable_refresh = 1
-    }
-
 
 </script>
 
