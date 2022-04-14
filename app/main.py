@@ -36,7 +36,7 @@ def read():
     else:
         data = site_frame.filter_data #site_frame.pull_points()
     now = datetime.now()
-    data['time'] = now.strftime("%S") #data.append(now.strftime("%S"))
+    data['time'] = time() - site_frame.start_time #data.append(now.strftime("%S"))
     #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
     response = make_response(json.dumps(data)); #print(data)
     response.content_type = 'application/json'; #print(f'END: {time()}')

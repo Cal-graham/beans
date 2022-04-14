@@ -41,6 +41,8 @@ class SiteFrame:
         'temperature_boiler': 'constant_temperature_boiler',
         'flow_grouphead': 'constant_flow_grouphead'
     };
+    start_time = time()
+
 
 
     def __init__(self):

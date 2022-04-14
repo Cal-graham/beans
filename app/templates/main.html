@@ -147,27 +147,29 @@
     };
 	 
     dataset = function(graph, idx){
-	color = "rgb('255', '255', '255')"
+	var color = "rgb('255', '255', '255')";
+	console.log(graph);
 	{% if 'graphs' in args.keys() %}    
 	{% for graph in args['graphs'] %}
-	if (graph.includes('{{graph}}'){
-		add = $.extend( true, {}, zeroDataSet),
-		add.label = graph
-		color = chartColors.{{graph}}[idx]
-		add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
-		add.borderColor = color
-		add.pointBorderColor = color
-		add.pointBackgroundColor = color
-		add.fill = true
-		add.pointRadius = 0
-		add.outerGlowWidth = 40
-		add.outerGlowColor = color
-		add.shadowBlur = 10
-		add.shadowColor = color    
-		return add
-	}
-	{% endfor %}
+	if (graph.includes('{{graph}}')){
+		color = chartColors.{{graph}}[idx];
+        }
+        {% endfor %}
         {% endif %}
+	add = $.extend( true, {}, zeroDataSet),
+	add.label = graph;
+	add.showLine = true;
+	add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
+	add.borderColor = color
+	add.pointBorderColor = color
+	add.pointBackgroundColor = color
+	add.fill = true
+	add.pointRadius = 0
+	add.outerGlowWidth = 40
+	add.outerGlowColor = color
+	add.shadowBlur = 10
+	add.shadowColor = color    
+	return add
     }
 	
     clear_graphs = function(min){
@@ -182,7 +184,31 @@
         {% endfor %}
         {% endif %}
     }
-	 
+
+
+    function setBounds(chart){
+	if (chart.data.datasets[0].data.length > 5){
+	var min = chart.data.datasets[0].data[0].x
+	var max = chart.data.datasets[0].data[chart.data.datasets[0].data.length-1].x
+	chart.data.datasets.forEach((dataset) => {
+		if(dataset.data.length > 1){
+		console.log(dataset.data)
+		min_ = dataset.data[0].x
+		max_ = dataset.data[dataset.data.length-1].x
+        	if (min_ < min){
+                	min = min_
+                }
+		if (max_ > max){
+			max = max_
+		}
+		}
+        });
+	chart.options.scales.xAxes[0].ticks.min = min
+	chart.options.scales.xAxes[0].ticks.max = max
+	chart.update();
+        }
+    }
+ 
     var chartOptions = {
         maintainAspectRatio: false,
         animation: false,
@@ -198,7 +224,9 @@
         },
         scales:{
             xAxes: [{
-                display: false
+                display: false,
+		offset: false,
+		grace: '0%'
             }],
         },
         title: {
@@ -217,13 +245,14 @@
 
     {% if 'graphs' in args.keys() %}
     {% for graph in args['graphs'] %}
-	var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
-	      	data: {
-			labels: [],
-			datasets: []
-		 },
-	      	options: chartOptions,
-	});
+    var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
+      	type: 'scatter',
+	options: chartOptions,
+	data: {
+		labels: [],
+		datasets: [dataset('', 0)]
+	}
+    });
     var {{graph}}_maintain = 0 
     {% endfor %}
     {% endif %}
@@ -240,13 +269,12 @@
 		var {{graph}}_ = 0
 		{% endfor %}
     		{% endif %}
-		temps = [];
        		for (const [key, value] of Object.entries(r)){
 			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
 			if (key.includes("{{graph}}") && enable_refresh == 1){
-				console.log({{graph}}_)
-				{{graph}}.data.datasets[{{graph}}_].data.push(value)
+				//console.log({{graph}}_)
+				{{graph}}.data.datasets[{{graph}}_].data.push({x:r["time"], y:value})
 				{{graph}}_ = {{graph}}_ + 1
 			}
                 	{% endfor %}
@@ -257,8 +285,9 @@
                                 {{graph}}.data.labels.push(value)
                                 if ( (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
                                         {{graph}}.data.labels.shift();
+					var {{graph}}__ = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
-						if (dataset.type == 'line'){
+						if ({{graph}}__ <= {{graph}}_maintain){
                                                 	dataset.data.shift();
 						}
                                         });
@@ -269,6 +298,8 @@
 		}
                 {% if 'graphs' in args.keys() %}
                 {% for graph in args['graphs'] %}
+		//console.log({{graph}})
+		setBounds({{graph}})
 		{{graph}}.update();
 		{% endfor %}
     		{% endif %}
@@ -289,28 +320,25 @@
 		{% endfor %}
     		{% endif %}
        		for (const [key, value] of Object.entries(r)){
-			{% if 'graphs' in args.keys() and 'sources' in args.keys() %}
+			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
-			{% for source in args['sources'] %}
 			if (key.includes("{{graph}}")){
-				add = dataset("graph", {{graph}}_)
-				dataset.type = 'line'
-				{{graph}}.data.datasets[{{graph}}_] = (add)
-				{{graph}}_ = {{graph}}_ + 1
+				add = dataset("{{graph}}", {{graph}}_);
+				{{graph}}.data.datasets[{{graph}}_] = add;
+				{{graph}}_ = {{graph}}_ + 1;
 			}
-			{% endfor %}
 			{% endfor %}
     			{% endif %}
-			{% if 'graphs' in args.keys() and 'sources' in args.keys() %}
+		}
+		for (const [key, value] of Object.entries(r)){
+			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
-			{% for source in args['sources'] %}
+			{{graph}}_maintain = {{graph}}_
 			if (key.includes("{{graph}}")){
-				add = dataset("graph", {{graph}}_)
-				dataset.type = 'scatter'
-				{{graph}}.data.datasets[{{graph}}_] = (add)
-				{{graph}}_ = {{graph}}_ + 1
+				add = dataset("{{graph}}", {{graph}}_ - {{graph}}_maintain);
+				{{graph}}.data.datasets[{{graph}}_] = add;
+				{{graph}}_ = {{graph}}_ + 1;
 			}
-			{% endfor %}
 			{% endfor %}
     			{% endif %}
 		}
