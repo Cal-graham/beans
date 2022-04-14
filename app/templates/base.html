@@ -71,7 +71,7 @@
 			<div class="dropdown-menu" id="dropdown-menu" role="menu">
     				<div class="dropdown-content">
 				{% for graph in args['graphs'] %}
-					<a onclick="open_profiling('{{graph}}_profiling');close_modal('profile_settings');profile_settings=0" class="dropdown-item">
+					<a onclick="open_profiling_settings('{{graph}}_profiling');close_modal('profile_settings');profile_settings=0" class="dropdown-item">
         					<center>{{graph}} profiling</center>
       					</a>
 				{% endfor %}	

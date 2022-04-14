@@ -73,10 +73,10 @@ def current_profiles():
     return response
 
 
-@main_blueprint.route('/profile_settings/<graph>', methods=['GET'])
-def profile_settings(graph):
-    print((site_frame.pull_profile_settings(str(graph))));
-    response = make_response(json.dumps(site_frame.pull_profile_settings(str(graph)))); #print(data)
+@main_blueprint.route('/custom_profile_settings/<id>', methods=['GET'])
+def custom_profile_settings(id):
+    print((site_frame.profiles.current_custom_profile(str(id).split('_')[0])));
+    response = make_response(json.dumps(site_frame.profiles.current_custom_profile(str(id).split('_')[0]))); #print(data)
     response.content_type = 'application/json'; #print(f'END: {time()}')
     return response
 

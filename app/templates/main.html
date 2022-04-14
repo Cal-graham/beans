@@ -14,11 +14,11 @@
     </header>
     <section class="modal-card-body">
         <div class="box has-background-grey-darker">
-                <div class="block" style="position:relative; height:30vh; width:50vh">
+                <div class="block" style="position:relative; height:30vh; width:55vh">
                 <canvas id="{{graph}}_profiling_chart"></canvas>
                 </div>
         </div>
-	<div class="select" align="right">
+	<!--<div class="select" align="right">
 		{% if 'source' in args.keys() %}
 		<div class="columns">
 		{% for source in args['source'][graph] %}
@@ -30,7 +30,7 @@
 		{% endfor %}
 		{% endif %}
 		</div>
-	</div>
+	</div>-->
     </section>
     <footer class="modal-card-foot">
     </footer>
@@ -57,6 +57,82 @@
 
 <script>
 
+    function open_profiling_settings(id){
+	var requests = $.get('custom_profile_settings/'.concat(id));
+	var tm = requests.done(function(r){
+		console.log(r);
+		globalThis.modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
+                	type: 'scatter',
+                        data: {},
+                        options: customizingOptions,
+                });
+		//modal_chart.options.dragData = true;
+		//modal_chart.options.dragX = true;
+		index = 0;
+		for (index=0;index<r.length;index++){
+        		console.log(r[index])
+			modal_chart.data.datasets.push({
+					label: id,
+					pointRadius: 5,
+					showLine:true,
+					data: r[index]
+				})
+			}
+		{% if 'graphs' in args.keys() %}
+        	{% for graph in args['graphs'] %}
+		if (id.includes('{{graph}}')){
+			index = 0;
+				for (index=0;index<modal_chart.data.datasets.length;index++){
+				modal_chart.data.datasets[index].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb', 'rgba'),
+                        	modal_chart.data.datasets[index].borderColor = chartColors.{{graph}}[index],
+                        	modal_chart.data.datasets[index].pointBorderColor = chartColors.{{graph}}[index],
+                        	modal_chart.data.datasets[index].pointBackgroundColor = chartColors.{{graph}}[index],
+                        	modal_chart.data.datasets[index].outerGlowColor = chartColors.{{graph}}[index],
+                        	modal_chart.data.datasets[index].shadowColor = chartColors.{{graph}}[index]
+				}
+			}
+        	{% endfor %}
+       		{% endif %}
+		setBounds(modal_chart);
+		modal_chart.update();
+		open_modal(id);
+	});
+    }
+
+    var customizingOptions = {
+	dragData: true,
+	dragX: true,
+	maintainAspectRatio: false,
+        layout: {
+            padding:{
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: -10
+            }
+        },
+        scales:{
+            xAxes: [{
+                display: false,
+                offset: false,
+                grace: '0%'
+            }],
+        },
+        title: {
+          display: false
+        },
+        elements: {
+                point : {
+                        radius: 0
+                }
+        },
+        legend: {
+                display: false,
+                position: 'right'
+        }
+
+    }
+
     function get_scatter_data(chart){
 	let x = '/'
 	let y = '/'
@@ -79,12 +155,13 @@
 
     var record_button = document.navbar['record'];
     var stop_button = document.navbar['stop'];
-    var profile_settings_button = document.getElementById('profile_settings_trigger');
-    stop_button.style.display = 'none';
-
+    var profile_settings_button = document.getElementById('profile_settings_trigger');    
     var profile_button = document.navbar['profile'];
     var end_button = document.navbar['end'];
     var start_button = document.navbar['start'];
+
+
+    stop_button.style.display = 'none';
     end_button.style.display = 'none';
     start_button.style.display ='none';
 
@@ -108,21 +185,24 @@
 
     start_button.onclick = function(){
 	start_button.style.display = 'none';
-	$.get('/main/profile_start')
     }
 
     end_button.onclick = function(){
-	console.log('stopping...')
-        profiling = 0;
-        //console.log(profiling)
 	start_button.style.display = 'none';
         end_button.style.display = 'none';
         profile_button.style.display = 'inline';
-	end_profiling = 1
-	$.get('/main/profile_disable')
-	console.log('stopped')
     }
 	 
+
+    profile_settings_button.onclick = function(){
+	id = 'profile_settings';
+	if (document.getElementById(id).classList.value.includes('active')){
+		close_modal(id);
+	} else {
+		open_modal(id);
+    	}
+    }
+
     var chartColors = {
         pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'],
         flow: ['rgb(0, 100, 255)', 'rgb(0, 0, 255)'],
@@ -192,7 +272,7 @@
 	var max = chart.data.datasets[0].data[chart.data.datasets[0].data.length-1].x
 	chart.data.datasets.forEach((dataset) => {
 		if(dataset.data.length > 1){
-		console.log(dataset.data)
+		//console.log(dataset.data)
 		min_ = dataset.data[0].x
 		max_ = dataset.data[dataset.data.length-1].x
         	if (min_ < min){
@@ -212,8 +292,6 @@
     var chartOptions = {
         maintainAspectRatio: false,
         animation: false,
-	dragData: true,
-        dragX: true,	
         layout: {
             padding:{
 		left: 0,

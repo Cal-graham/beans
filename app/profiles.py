@@ -38,14 +38,17 @@ class Profiles:
                         #self.custom_profiles[graph][f'func_{source}'] = fit_func.copy()
 
 
-    def current_custom_profile(self, graph, source):
-        result = []
-        for index in range(len(self.custom_profiles[graph][source][0])):
-            result.append({
-                        'x': self.custom_profiles[graph][source][0][index],
-                        'y': self.custom_profiles[graph][source][1][index]
-                })
-        return result
+    def current_custom_profile(self, graph):
+        results = []
+        for source in self.custom_profiles[graph].keys():
+                result = []
+                for index in range(len(self.custom_profiles[graph][source][0])):
+                    result.append({
+                                'x': self.custom_profiles[graph][source][0][index],
+                                'y': self.custom_profiles[graph][source][1][index]
+                    })
+                results.append(result)
+        return results
 
     def check_start(func):
         def wrapper(self, gen, time_, type=None):
