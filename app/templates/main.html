@@ -18,6 +18,7 @@
                 <canvas id="{{graph}}_profiling_chart"></canvas>
                 </div>
         </div>
+	<button class="button is-info" onclick="submit_custom_profile('{{graph}}');">Submit Changes</button>
 	<!--<div class="select" align="right">
 		{% if 'source' in args.keys() %}
 		<div class="columns">
@@ -56,6 +57,10 @@
 </div>
 
 <script>
+
+    function submit_custom_profile(graph){
+	$.get('submit_custom_profile/'.concat(graph).concat(get_scatter_data(modal_chart)))
+    }
 
     function open_profiling_settings(id){
 	var requests = $.get('custom_profile_settings/'.concat(id));
@@ -136,11 +141,16 @@
     function get_scatter_data(chart){
 	let x = '/'
 	let y = '/'
-	for (const index in chart.data.datasets[0].data){
-		x+=chart.data.datasets[0].data[index].x;
-		y+=chart.data.datasets[0].data[index].y;
+	index = 0;
+	for (index=0; index<chart.data.datasets.length;index++){
+	for (const idx in chart.data.datasets[0].data){
+		x+=chart.data.datasets[index].data[idx].x;
+		y+=chart.data.datasets[index].data[idx].y;
 		x+=',';
 		y+=',';
+	}
+	x+='|'
+	y+='|'
 	}
 	return x+y
     }
@@ -164,9 +174,104 @@
     stop_button.style.display = 'none';
     end_button.style.display = 'none';
     start_button.style.display ='none';
+    record_button.style.display = 'none';
 
     var recording = 0;
+    var profiling_stage = 0
     var enable_refresh = 1;
+
+    profile_button.onclick = function(){
+	profile_button.style.display = 'none';
+	start_button.style.display = 'inline';
+	end_button.style.display = 'inline';
+	profiling_stage = 1;
+    }
+
+    setupProfiles = function(){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+                var {{graph}}_ = 0
+                var requests = $.get('custom_profile_settings/'.concat('{{graph}}_profiling'));
+                var tm = requests.done(function(r){
+                        for (index=0;index<r.length;index++){
+                                console.log(r[index])
+                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:0,y:r[index][0].y},{x:0,y:r[index][0].y}]
+                        }
+                });
+	{{graph}}.update();
+        {% endfor %}
+        {% endif %}
+        profiling_stage = 2;
+    }
+
+    removeProfiles = function(){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+                var {{graph}}_ = 0
+                var requests = $.get('custom_profile_settings/'.concat('{{graph}}_profiling'));
+                var tm = requests.done(function(r){
+                        for (index=0;index<r.length;index++){
+                                console.log(r[index])
+                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:0,y:0},{x:0,y:0}];
+                        }
+                });
+        {{graph}}.update();
+        {% endfor %}
+        {% endif %}
+    }
+
+    targetProfiles = function(){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+                var xmin = {{graph}}.data.datasets[0].data[0].x;
+     		var xmax = {{graph}}.data.datasets[0].data[{{graph}}.data.datasets[0].data.length - 1].x
+                for (index={{graph}}_maintain;index<{{graph}}.data.datasets.length;index++){
+                	//console.log(index)
+                        //console.log({{graph}}.data.datasets[index])
+                        {{graph}}.data.datasets[index].data[0].x = xmin;
+                        {{graph}}.data.datasets[index].data[1].x = xmax;
+                }
+        {% endfor %}
+       	{% endif %}
+    }
+
+    enableProfiles = function(){
+	$.get('start_profiling')
+	clear_graphs(50);
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+                var requests = $.get('custom_profile_settings/'.concat('{{graph}}_profiling'));
+                var tm = requests.done(function(r){
+                        for (index=0;index<r.length;index++){
+                                console.log(r[index])
+                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = r[index]
+				{{graph}}.data.datasets[{{graph}}_maintain+index].data.unshift( {x:-5, y:r[index][0].y} )
+				for (idx=0;idx<{{graph}}.data.datasets[index].data.length;idx++){
+					{{graph}}.data.datasets[index].data[idx].x = 5*(idx/50 - 1);
+				}
+                        }
+                });
+	{{graph}}.options.scales.xAxes[0].ticks.min = -5
+        {{graph}}.options.scales.xAxes[0].ticks.max = 60
+	//sleep(100);
+        {{graph}}.update();
+        //setBounds({{graph}})
+        {% endfor %}
+        {% endif %}
+	profiling_stage = 4;
+    }
+
+    profilingStage = function(){
+	if (profiling_stage == 1){
+		setupProfiles();
+	}
+	if (profiling_stage == 2){
+		targetProfiles();
+	}
+	if (profiling_stage == 3){
+		enableProfiles();
+	}
+    }
 
     record_button.onclick = function(){
 	recording = 1;
@@ -185,12 +290,15 @@
 
     start_button.onclick = function(){
 	start_button.style.display = 'none';
+	profiling_stage = 3;
     }
 
     end_button.onclick = function(){
 	start_button.style.display = 'none';
         end_button.style.display = 'none';
         profile_button.style.display = 'inline';
+	profiling_stage = 0;
+	removeProfiles();
     }
 	 
 
@@ -255,19 +363,25 @@
     clear_graphs = function(min){
 	{% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
+	if({{graph}}.data.datasets[0].data.length > min){
         while ({{graph}}.data.labels.length > min){
+		{{graph}}_ = 0
                 {{graph}}.data.labels.shift();
                 {{graph}}.data.datasets.forEach((dataset) => {
-                        dataset.data.shift();
+                       	if ({{graph}}_ <= {{graph}}_maintain){
+                        	dataset.data.shift();
+				{{graph}}_ += 1
+                	}
                 });
         }
+	}
         {% endfor %}
         {% endif %}
     }
 
 
     function setBounds(chart){
-	if (chart.data.datasets[0].data.length > 5){
+	if (chart.data.datasets[0].data.length > 1){
 	var min = chart.data.datasets[0].data[0].x
 	var max = chart.data.datasets[0].data[chart.data.datasets[0].data.length-1].x
 	chart.data.datasets.forEach((dataset) => {
@@ -275,9 +389,11 @@
 		//console.log(dataset.data)
 		min_ = dataset.data[0].x
 		max_ = dataset.data[dataset.data.length-1].x
-        	if (min_ < min){
+        	//console.log(min)
+		//console.log(min_)
+		if (min_ < min && min_ != 0){
                 	min = min_
-                }
+		}
 		if (max_ > max){
 			max = max_
 		}
@@ -361,7 +477,7 @@
 	                        {% if 'graphs' in args.keys() %}
         	                {% for graph in args['graphs'] %}
                                 {{graph}}.data.labels.push(value)
-                                if ( (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
+                                if ( profiling_stage < 3 && (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
                                         {{graph}}.data.labels.shift();
 					var {{graph}}__ = 0
                                         {{graph}}.data.datasets.forEach((dataset) => {
@@ -374,13 +490,25 @@
                         	{% endif %}
                         }
 		}
+
+                if (profiling_stage != 0){
+			//console.log(profiling_stage)
+                        profilingStage();
+                }
+		if (profiling_stage < 4){
+                	{% if 'graphs' in args.keys() %}
+                	{% for graph in args['graphs'] %}
+			//console.log({{graph}})
+			setBounds({{graph}});
+			{% endfor %}
+    			{% endif %}
+		}
                 {% if 'graphs' in args.keys() %}
-                {% for graph in args['graphs'] %}
-		//console.log({{graph}})
-		setBounds({{graph}})
-		{{graph}}.update();
-		{% endfor %}
-    		{% endif %}
+ 		{% for graph in args['graphs'] %}
+                {{graph}}.update();
+                {% endfor %}
+                {% endif %}
+
 	setTimeout(refresh, 100);
         });
 	} catch(err) {
@@ -405,15 +533,17 @@
 				{{graph}}.data.datasets[{{graph}}_] = add;
 				{{graph}}_ = {{graph}}_ + 1;
 			}
+			{{graph}}_maintain = {{graph}}_
 			{% endfor %}
     			{% endif %}
 		}
 		for (const [key, value] of Object.entries(r)){
 			{% if 'graphs' in args.keys() %}
     			{% for graph in args['graphs'] %}
-			{{graph}}_maintain = {{graph}}_
 			if (key.includes("{{graph}}")){
 				add = dataset("{{graph}}", {{graph}}_ - {{graph}}_maintain);
+				add.borderDash = [10,5];
+				add.data = [{x:0,y:0},{x:0,y:0}]
 				{{graph}}.data.datasets[{{graph}}_] = add;
 				{{graph}}_ = {{graph}}_ + 1;
 			}
