@@ -1,12 +1,9 @@
-from flask import Response, Blueprint, render_template, redirect, url_for, flash, request, session, make_response
-#from flask_sse import sse
-#from quart import Blueprint, render_template, redirect, url_for, flash, request, session, make_response
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, make_response
 import json
-from time import time, sleep
+from time import time
 from datetime import datetime
 import atexit
 from siteFrame import SiteFrame
-import asyncio
 #from flask import app
 
 
@@ -33,38 +30,17 @@ def index():
 
 @main_blueprint.route('/read', methods=['GET'])
 def read():
-    start = time(); #site_frame.announcer.announce(site_frame.sse_dat()); print([list(q.queue) for q in site_frame.announcer.listeners])
-    #if site_frame.profile_send:
-    #    data = site_frame.generate_profile()
-    #else:
-    data = site_frame.filter_data #site_frame.pull_points()
+    #print(f'START: {time()}')
+    if site_frame.profile_send:
+        data = site_frame.generate_profile()
+    else:
+        data = site_frame.filter_data #site_frame.pull_points()
     now = datetime.now()
     data['time'] = time() - site_frame.start_time #data.append(now.strftime("%S"))
     #[data.append(site_frame.current_read[key]) for key in site_frame.current_read.keys()]
     response = make_response(json.dumps(data)); #print(data)
-    response.content_type = 'application/json'; #print(f'Request Time: {time() - start}')
+    response.content_type = 'application/json'; #print(f'END: {time()}')
     return response
-
-
-@main_blueprint.route('/continuous_read', methods=['GET'])
-def continuous_read():
-    def stream():
-        messages = site_frame.announcer.listen()
-        while True:
-            msg = messages.get()
-            #print(msg)
-            yield msg
-
-    return Response(stream(), mimetype='text/event-stream')
-
-
-#@main_blueprint.route('/SSE', methods=['GET'])
-#def SSE():
-#    while True:
-#        sleep(0.1)
-#        data = site_frame.filter_data
-#        data['time'] = time() - site_frame.start_time
-#        sse.publish({"reading": data}, type='reading')
 
 
 #@main_blueprint.route('/profile_enable/<graph>', methods=['GET'])
@@ -144,7 +120,7 @@ def submit_custom_profile(graph, xdat, ydat):
     for key in site_frame.profiles.custom_profiles[str(graph)].keys():
         keys.append(key)
     for idx in range(len(keys)):
-        xdata = [float(x) for x in str(xdat).split('|')[idx].split(',') if x]
+        xdata = [float(x) for x in str(xdat).split('|')[idx].split(',') if x]; print(xdat)
         ydata = [float(y) for y in str(ydat).split('|')[idx].split(',') if y]
         site_frame.profiles.custom_profiles[str(graph)][keys[idx]] = [xdata,ydata]
     return '1'
@@ -164,11 +140,8 @@ def save_custom_profile(name, graph):
 
 @main_blueprint.route('/get_profile_options/<graph>', methods=['GET'])
 def get_profile_options(graph):
-    result = {}
-    for key in site_frame.profiles.all_profiles.keys():
-        if str(graph) in site_frame.profiles.all_profiles[key]['graph']:
-            result[key] = key
-    return result
+    
+return [key for key in site_frame.profiles.all_profiles.keys() if str(graph) in site_frame.profiles.all_profiles[key].keys()]
 
 
 @main_blueprint.route('/switch_profile_option/<name>', methods=['GET'])

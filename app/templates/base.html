@@ -52,11 +52,26 @@
 </head>
 
 <body>
+
 <nav class="navbar is-black" style="width:100%">
+
+<div class="navbar-brand">
+	<div class="navbar-item">
+            <h1 class="title" style="color:white"><center>B.E.A.N.S.</center></h1>
+	</div>
+
+<a role="button" id="nav_off" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="nav_menu" onclick="toggle_modal('nav_menu'); toggle_modal('nav_off')">
+  <span aria-hidden="true"></span>
+  <span aria-hidden="true"></span>
+  <span aria-hidden="true"></span>
+</a>
+</div>
+
+<div class="navbar-menu has-background-black" id="nav_menu">
     <div class="navbar-start">
-        <div class="navbar-item">
+        <!--<div class="navbar-item">
             <h1 class="title" style="color:white">B.E.A.N.S.</h1>
-        </div>
+        </div>-->
 	{% if 'graphs' in args.keys() %}
 	<div class="navbar-item">
 		<div class="dropdown" id="profile_settings">
@@ -104,6 +119,7 @@
 	</form>
         </div>
     </div>
+</div></div>
 </nav>
 
 <section class="hero is-black is-fullheight">

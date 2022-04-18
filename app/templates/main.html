@@ -10,30 +10,35 @@
   <div class="modal-card">
     <header class="modal-card-head">
 	<p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
-      <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
+	<button class="delete" onclick="submit_custom_profile('{{graph}}');"  aria-label="close"></button>
     </header>
     <section class="modal-card-body">
         <div class="box has-background-grey-darker">
-                <div class="block" style="position:relative; height:30vh; width:55vh">
+                <div class="block" style="position:relative; height:28vh; width:55vh">
                 <canvas id="{{graph}}_profiling_chart"></canvas>
                 </div>
         </div>
-	<button class="button is-info" onclick="submit_custom_profile('{{graph}}');">Submit Changes</button>
-	<!--<div class="select" align="right">
-		{% if 'source' in args.keys() %}
-		<div class="columns">
-		{% for source in args['source'][graph] %}
-		<div class="column is-{{12/args['source'].keys()|length}}">
-		<select id="{{graph}}_profiling_{{source}}_select" onchange="change_profile('{{graph}}', '{{source}}');">
+	<div class="columns">
+	<!--<div class="column">
+		<button class="button is-info is-fullwidth" onclick="submit_custom_profile('{{graph}}');">Submit Changes</button>
+	</div>-->	
+	<div class="column">
+        	<button class="button is-info is-fullwidth" onclick="revert_custom_profile('{{graph}}');">Revert Changes</button>
+        </div>
+        <!--<div class="column">
+                <button class="button is-info is-fullwidth" onclick="save_custom_profile('{{graph}}');">Save Changes</button>
+        </div>-->
+	<div class="column">
+	<div class="select is-fullwidth" align="right">
+		<select id="{{graph}}_profiling_select" onchange="switch_to_profile('{{graph}}');">
 			<option>Profiling Options</option>
 		</select>
-		</div>
-		{% endfor %}
-		{% endif %}
-		</div>
-	</div>-->
+	</div>
+	</div>
+	</div>
     </section>
     <footer class="modal-card-foot">
+<button class="button is-info is-fullwidth is-outlined" onclick="save_custom_profile('{{graph}}');">Save Changes</button>
     </footer>
   </div>
 </div>
@@ -58,14 +63,38 @@
 
 <script>
 
+    function switch_to_profile(graph){
+	var select_form = document.getElementById(graph.concat('_profiling_select'));
+	var name = select_form.options[select_form.selectedIndex].value;
+	$.get('switch_profile_option/'.concat(name))
+        close_modal(graph.concat('_profiling'))
+        open_profiling_settings(graph.concat('_profiling'))
+    }
+
+    function save_custom_profile(graph){
+	$.get('submit_custom_profile/'.concat(graph).concat(get_scatter_data(modal_chart)))
+	let name = prompt("Enter Custom Profile Name:")
+	$.get('save_custom_profile/'.concat(graph).concat('/').concat(name))
+    }
+
     function submit_custom_profile(graph){
 	$.get('submit_custom_profile/'.concat(graph).concat(get_scatter_data(modal_chart)))
+	close_modal(graph.concat('_profiling'))
+    }
+
+    function revert_custom_profile(graph){
+        $.get('revert_custom_profile/'.concat(graph))
+	close_modal(graph.concat('_profiling'))
+	open_profiling_settings(graph.concat('_profiling'))
     }
 
     function open_profiling_settings(id){
 	var requests = $.get('custom_profile_settings/'.concat(id));
 	var tm = requests.done(function(r){
 		console.log(r);
+		if (typeof modal_chart != 'undefined') {
+			modal_chart.destroy();
+		}
 		globalThis.modal_chart = new Chart(document.getElementById(id.concat('_chart')), {
                 	type: 'scatter',
                         data: {},
@@ -78,7 +107,8 @@
         		console.log(r[index])
 			modal_chart.data.datasets.push({
 					label: id,
-					pointRadius: 5,
+					pointRadius: 10,
+					pointHoverRadius: 10,
 					showLine:true,
 					data: r[index]
 				})
@@ -87,24 +117,36 @@
         	{% for graph in args['graphs'] %}
 		if (id.includes('{{graph}}')){
 			index = 0;
-				for (index=0;index<modal_chart.data.datasets.length;index++){
+			for (index=0;index<modal_chart.data.datasets.length;index++){
 				modal_chart.data.datasets[index].backgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.10)').replace('rgb', 'rgba'),
                         	modal_chart.data.datasets[index].borderColor = chartColors.{{graph}}[index],
                         	modal_chart.data.datasets[index].pointBorderColor = chartColors.{{graph}}[index],
-                        	modal_chart.data.datasets[index].pointBackgroundColor = chartColors.{{graph}}[index],
+                        	modal_chart.data.datasets[index].pointBackgroundColor = chartColors.{{graph}}[index].replace(')', ', 0.40)').replace('rgb', 'rgba'),
                         	modal_chart.data.datasets[index].outerGlowColor = chartColors.{{graph}}[index],
                         	modal_chart.data.datasets[index].shadowColor = chartColors.{{graph}}[index]
-				}
 			}
+		}
         	{% endfor %}
        		{% endif %}
 		setBounds(modal_chart);
 		modal_chart.update();
+		var requests = $.get('get_profile_options/'.concat(id.replace('_profiling', '')))
+		var tm = requests.done(function(r){
+			select = document.getElementById(id.concat('_select'))
+			var i = 1;
+			for (const [key, value] of Object.entries(r)) { 
+				select[i] = new Option(key, key, false, false)
+				i += 1
+			}
+		});
 		open_modal(id);
 	});
     }
 
     var customizingOptions = {
+	animation: {
+		duration: 0
+	},
 	dragData: true,
 	dragX: true,
 	maintainAspectRatio: false,
@@ -163,6 +205,20 @@
         document.getElementById(id).classList.remove('is-active');
     }
 
+    function toggle_modal(id){
+	element = document.getElementById(id)
+	var ind = 0;
+	for (const [idx, string] of element.classList.entries()){
+		if (string.includes('is-active')){
+			close_modal(id)
+			ind = 1
+		}
+	}
+	if (ind == 0){
+		open_modal(id)
+	}
+    }
+
     var record_button = document.navbar['record'];
     var stop_button = document.navbar['stop'];
     var profile_settings_button = document.getElementById('profile_settings_trigger');    
@@ -191,12 +247,15 @@
 	{% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
                 var {{graph}}_ = 0
+		var xmin = {{graph}}.data.datasets[0].data[0].x;
+                var xmax = {{graph}}.data.datasets[0].data[{{graph}}.data.datasets[0].data.length - 1].x
                 var requests = $.get('custom_profile_settings/'.concat('{{graph}}_profiling'));
                 var tm = requests.done(function(r){
                         for (index=0;index<r.length;index++){
                                 console.log(r[index])
-                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:0,y:r[index][0].y},{x:0,y:r[index][0].y}]
-                        }
+                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:xmin,y:r[index][0].y},{x:xmax,y:r[index][0].y}]
+                        	{{graph}}.data.datasets[{{graph}}_maintain+index].hidden = false;
+			}
                 });
 	{{graph}}.update();
         {% endfor %}
@@ -207,14 +266,17 @@
     removeProfiles = function(){
 	{% if 'graphs' in args.keys() %}
         {% for graph in args['graphs'] %}
-                var {{graph}}_ = 0
+                var xmin = {{graph}}.data.datasets[0].data[0].x;
+                var xmax = {{graph}}.data.datasets[0].data[{{graph}}.data.datasets[0].data.length - 1].x
                 var requests = $.get('custom_profile_settings/'.concat('{{graph}}_profiling'));
                 var tm = requests.done(function(r){
                         for (index=0;index<r.length;index++){
                                 console.log(r[index])
-                                {{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:0,y:0},{x:0,y:0}];
+                                {{graph}}.data.datasets[{{graph}}_maintain+index].hidden = true;
+				{{graph}}.data.datasets[{{graph}}_maintain+index].data = [{x:xmin,y:0},{x:xmax,y:0}];
                         }
                 });
+	setBounds({{graph}})
         {{graph}}.update();
         {% endfor %}
         {% endif %}
@@ -245,13 +307,13 @@
                         for (index=0;index<r.length;index++){
                                 console.log(r[index])
                                 {{graph}}.data.datasets[{{graph}}_maintain+index].data = r[index]
-				{{graph}}.data.datasets[{{graph}}_maintain+index].data.unshift( {x:-5, y:r[index][0].y} )
+				{{graph}}.data.datasets[{{graph}}_maintain+index].data.unshift( {x:-10, y:r[index][0].y} )
 				for (idx=0;idx<{{graph}}.data.datasets[index].data.length;idx++){
-					{{graph}}.data.datasets[index].data[idx].x = 5*(idx/50 - 1);
+					{{graph}}.data.datasets[index].data[idx].x = 5*(idx/50 - 2);
 				}
                         }
                 });
-	{{graph}}.options.scales.xAxes[0].ticks.min = -5
+	{{graph}}.options.scales.xAxes[0].ticks.min = -10
         {{graph}}.options.scales.xAxes[0].ticks.max = 60
 	//sleep(100);
         {{graph}}.update();
@@ -265,7 +327,7 @@
 	if (profiling_stage == 1){
 		setupProfiles();
 	}
-	if (profiling_stage == 2){
+	if (profiling_stage != 4){
 		targetProfiles();
 	}
 	if (profiling_stage == 3){
@@ -301,7 +363,6 @@
 	removeProfiles();
     }
 	 
-
     profile_settings_button.onclick = function(){
 	id = 'profile_settings';
 	if (document.getElementById(id).classList.value.includes('active')){
@@ -384,21 +445,21 @@
 	if (chart.data.datasets[0].data.length > 1){
 	var min = chart.data.datasets[0].data[0].x
 	var max = chart.data.datasets[0].data[chart.data.datasets[0].data.length-1].x
-	chart.data.datasets.forEach((dataset) => {
-		if(dataset.data.length > 1){
-		//console.log(dataset.data)
-		min_ = dataset.data[0].x
-		max_ = dataset.data[dataset.data.length-1].x
+//	chart.data.datasets.forEach((dataset) => {
+//		if(dataset.data.length > 1){
+//		//console.log(dataset.data)
+//		min_ = dataset.data[0].x
+//		max_ = dataset.data[dataset.data.length-1].x
         	//console.log(min)
 		//console.log(min_)
-		if (min_ < min && min_ != 0){
-                	min = min_
-		}
-		if (max_ > max){
-			max = max_
-		}
-		}
-        });
+//		if (min_ < min && min_ != 0){
+//                	min = min_
+//		}
+//		if (max_ > max){
+//			max = max_
+//		}
+//		}
+  //      });
 	chart.options.scales.xAxes[0].ticks.min = min
 	chart.options.scales.xAxes[0].ticks.max = max
 	chart.update();
@@ -407,7 +468,9 @@
  
     var chartOptions = {
         maintainAspectRatio: false,
-        animation: false,
+        animation: {
+                duration: 0
+        },
         layout: {
             padding:{
 		left: 0,
@@ -451,6 +514,63 @@
     {% endfor %}
     {% endif %}
 
+    update_graphs = function(r){
+
+                {% if 'graphs' in args.keys() %}
+                {% for graph in args['graphs'] %}
+                var {{graph}}_ = 0
+                {% endfor %}
+                {% endif %}
+                for (const [key, value] of Object.entries(r)){
+                        {% if 'graphs' in args.keys() %}
+                        {% for graph in args['graphs'] %}
+                        if (key.includes("{{graph}}") && enable_refresh == 1){
+                                //console.log({{graph}}_)
+                                {{graph}}.data.datasets[{{graph}}_].data.push({x:r["time"], y:value})
+                                {{graph}}_ = {{graph}}_ + 1
+                        }
+                        {% endfor %}
+                        {% endif %}
+                        if (key.includes("time")){
+                                {% if 'graphs' in args.keys() %}
+                                {% for graph in args['graphs'] %}
+                                {{graph}}.data.labels.push(value)
+                                if ( profiling_stage < 3 && {{graph}}.data.labels.length > 400 ){ // removed RECORDING HERE
+                                        {{graph}}.data.labels.shift();
+                                        var {{graph}}__ = 0
+                                        {{graph}}.data.datasets.forEach((dataset) => {
+                                                if ({{graph}}__ < {{graph}}_maintain){
+                                                        dataset.data.shift();
+                                                        {{graph}}__ += 1
+                                                }
+                                        });
+                                }
+                                {% endfor %}
+                                {% endif %}
+                        }
+                }
+
+                if (profiling_stage != 0){
+                        //console.log(profiling_stage)
+                        profilingStage();
+                }
+                if (profiling_stage < 4){
+                        {% if 'graphs' in args.keys() %}
+                        {% for graph in args['graphs'] %}
+                        //console.log({{graph}})
+                        setBounds({{graph}});
+                        {% endfor %}
+                        {% endif %}
+                }
+                {% if 'graphs' in args.keys() %}
+                {% for graph in args['graphs'] %}
+                {{graph}}.update();
+                {% endfor %}
+                {% endif %}
+
+
+    }
+
     var refresh = function(){
 	while (enable_refresh == 0){
 		sleep(100);
@@ -458,58 +578,8 @@
 	try{
         var requests = $.get('/main/read');
         var tm = requests.done(function(r){
-		{% if 'graphs' in args.keys() %}
-    		{% for graph in args['graphs'] %}
-		var {{graph}}_ = 0
-		{% endfor %}
-    		{% endif %}
-       		for (const [key, value] of Object.entries(r)){
-			{% if 'graphs' in args.keys() %}
-    			{% for graph in args['graphs'] %}
-			if (key.includes("{{graph}}") && enable_refresh == 1){
-				//console.log({{graph}}_)
-				{{graph}}.data.datasets[{{graph}}_].data.push({x:r["time"], y:value})
-				{{graph}}_ = {{graph}}_ + 1
-			}
-                	{% endfor %}
-                	{% endif %}
-                        if (key.includes("time")){
-	                        {% if 'graphs' in args.keys() %}
-        	                {% for graph in args['graphs'] %}
-                                {{graph}}.data.labels.push(value)
-                                if ( profiling_stage < 3 && (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
-                                        {{graph}}.data.labels.shift();
-					var {{graph}}__ = 0
-                                        {{graph}}.data.datasets.forEach((dataset) => {
-						if ({{graph}}__ <= {{graph}}_maintain){
-                                                	dataset.data.shift();
-						}
-                                        });
-                                }
-                        	{% endfor %}
-                        	{% endif %}
-                        }
-		}
-
-                if (profiling_stage != 0){
-			//console.log(profiling_stage)
-                        profilingStage();
-                }
-		if (profiling_stage < 4){
-                	{% if 'graphs' in args.keys() %}
-                	{% for graph in args['graphs'] %}
-			//console.log({{graph}})
-			setBounds({{graph}});
-			{% endfor %}
-    			{% endif %}
-		}
-                {% if 'graphs' in args.keys() %}
- 		{% for graph in args['graphs'] %}
-                {{graph}}.update();
-                {% endfor %}
-                {% endif %}
-
-	setTimeout(refresh, 100);
+		update_graphs(r);
+	//setTimeout(refresh, 100);
         });
 	} catch(err) {
 		console.log(err)
@@ -530,6 +600,7 @@
     			{% for graph in args['graphs'] %}
 			if (key.includes("{{graph}}")){
 				add = dataset("{{graph}}", {{graph}}_);
+				add.data = [{x:r['time'], y:value}]
 				{{graph}}.data.datasets[{{graph}}_] = add;
 				{{graph}}_ = {{graph}}_ + 1;
 			}
@@ -543,21 +614,28 @@
 			if (key.includes("{{graph}}")){
 				add = dataset("{{graph}}", {{graph}}_ - {{graph}}_maintain);
 				add.borderDash = [10,5];
-				add.data = [{x:0,y:0},{x:0,y:0}]
+				add.data = [{x:0,y:0},{x:0,y:0}];
+				add.hidden = true;
 				{{graph}}.data.datasets[{{graph}}_] = add;
 				{{graph}}_ = {{graph}}_ + 1;
 			}
 			{% endfor %}
     			{% endif %}
 		}
-		//{% if 'graphs' in args.keys() %}
-    		//{% for graph in args['graphs'] %}
-		//{{graph}}.update();
+		targetProfiles();
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
+		{{graph}}.update();
 		//{{graph}}.options.scales.xAxes[0].display = true
 		//{{graph}}.update();
-		//{% endfor %}
-    		//{% endif %}
+		{% endfor %}
+    		{% endif %}
         });
+	var source = new EventSource("/main/continuous_read");
+	source.onmessage = function(event){
+    		console.log(event.data)
+		update_graphs(JSON.parse(event.data))
+	}
     }
 
     function sleep(ms) {
@@ -565,7 +643,7 @@
     }
 
     init();
-    refresh();
+    //refresh();
 
 </script>
 

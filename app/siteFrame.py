@@ -1,10 +1,12 @@
 from time import sleep, time
 from copy import deepcopy
 from inspect import getmembers, isfunction
+import json
 import threading
 import numpy as np
 import requests
 from profiles import Profiles
+from events import MessageAnnouncer
 
 
 if 1:
@@ -26,6 +28,7 @@ class SiteFrame:
     last_pressure_alert = 0
     adc_thread = None
     smoothing_thread = None
+    announcer = None
     adc = []
     pins = {
         'pressure_grouphead': '1.0',
@@ -42,7 +45,6 @@ class SiteFrame:
         'flow_grouphead': 'constant_flow_grouphead'
     };
     start_time = time()
-
 
 
     def __init__(self):
@@ -64,6 +66,7 @@ class SiteFrame:
             self.run_smoothing_thread = 1
             self.smoothing_thread = threading.Thread(target=lambda: self.smooth())
             self.smoothing_thread.start()
+        self.announcer = MessageAnnouncer()
         sleep(1)
         print('Initialized')
 
@@ -75,7 +78,8 @@ class SiteFrame:
     def comms(self):
         self.pull_readings(4)
         while self.run_adc_thread:
-            self.pull_readings(0.1)
+            self.announcer.announce(self.sse_dat())
+            self.pull_readings(0.2)
             #print('readings:',len(self.raw_data['temp_br']))
             self.limit_datapoints(self.reading_limit)
 
@@ -122,6 +126,7 @@ class SiteFrame:
         for key in self.pins.keys():
             weight = np.exp(np.linspace(0, 1, 100))
             self.filter_data[key] = np.sum( np.multiply(self.real_data[key], weight) ) / np.sum( weight )
+        #self.announcer.announce(self.sse_dat()); #print('announced')
 
     def pull_points(self):
         self.update_data()
@@ -153,7 +158,7 @@ class SiteFrame:
                       json={"value1":message,"value2":"none","value3":"none"})
 
     def enable_profile(self, type):
-        self.profile_send = 1; print(type)
+        self.profile_send = 1
         self.profile_generate['type'].append(type); return 1
 
     def start_profile(self):
@@ -200,4 +205,16 @@ class SiteFrame:
             response['profile_data'].append(datx)
             response['profile_labels'].append(daty)
         return response
+
+    def format_sse(self, data, event=None):
+        msg = f'data: {json.dumps(data)}\n\n'
+        if event is not None:
+            msg = f'event: {event}\n{msg}'
+        return msg
+
+    def sse_dat(self):
+        #print(self.announcer.listeners)
+        data = self.filter_data
+        data['time'] = time() - self.start_time
+        return self.format_sse(data)
 

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if 'graphs' in args.keys() %}
+{% for graph in args['graphs'] %}
+
+<div class="modal" id="{{graph}}_profiling">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+	<p class="modal-card-title" id="{{graph}}_profiling_title">{{graph}} profiling</p>
+      <button class="delete" onclick="close_modal('{{graph}}_profiling');"  aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+        <div class="box has-background-grey-darker">
+                <div class="block" style="position:relative; height:30vh; width:50vh">
+                <canvas id="{{graph}}_profiling_chart"></canvas>
+                </div>
+        </div>
+	<div class="select" align="right">
+		{% if 'source' in args.keys() %}
+		<div class="columns">
+		{% for source in args['source'][graph] %}
+		<div class="column is-{{12/args['source'].keys()|length}}">
+		<select id="{{graph}}_profiling_{{source}}_select" onchange="change_profile('{{graph}}', '{{source}}');">
+			<option>Profiling Options</option>
+		</select>
+		</div>
+		{% endfor %}
+		{% endif %}
+		</div>
+	</div>
+    </section>
+    <footer class="modal-card-foot">
+    </footer>
+  </div>
+</div>
+
+{% endfor %}
+{% endif %}
+
+
+<div class="columns">
+<div class="column is-12">
+	{% if 'graphs' in args.keys() %}
+	{% for graph in args['graphs'] %}
+	<div class="box has-background-grey-darker">
+		<div class="block" style="position: relative; height:{{80/args['graphs']|length}}vh; width:100%">
+		<canvas id="{{graph}}"></canvas>
+		</div>
+	</div>
+	{% endfor %}
+	{% endif %}
+</div>
+</div>
+
+<script>
+
+    function get_scatter_data(chart){
+	let x = '/'
+	let y = '/'
+	for (const index in chart.data.datasets[0].data){
+		x+=chart.data.datasets[0].data[index].x;
+		y+=chart.data.datasets[0].data[index].y;
+		x+=',';
+		y+=',';
+	}
+	return x+y
+    }
+
+    function open_modal(id){
+	document.getElementById(id).classList.add('is-active');
+    }
+
+    function close_modal(id){
+        document.getElementById(id).classList.remove('is-active');
+    }
+
+    var record_button = document.navbar['record'];
+    var stop_button = document.navbar['stop'];
+    var profile_settings_button = document.getElementById('profile_settings_trigger');
+    stop_button.style.display = 'none';
+
+    var profile_button = document.navbar['profile'];
+    var end_button = document.navbar['end'];
+    var start_button = document.navbar['start'];
+    end_button.style.display = 'none';
+    start_button.style.display ='none';
+
+    var recording = 0;
+    var enable_refresh = 1;
+
+    record_button.onclick = function(){
+	recording = 1;
+	console.log('recording...')
+	record_button.style.display = 'none';
+	stop_button.style.display = 'inline';
+    }
+
+    stop_button.onclick = function(){
+        recording = 0;
+	console.log('end recording')
+        stop_button.style.display = 'none';
+        record_button.style.display = 'inline';
+        clear_graphs(400);
+    }
+
+    start_button.onclick = function(){
+	start_button.style.display = 'none';
+	$.get('/main/profile_start')
+    }
+
+    end_button.onclick = function(){
+	console.log('stopping...')
+        profiling = 0;
+        //console.log(profiling)
+	start_button.style.display = 'none';
+        end_button.style.display = 'none';
+        profile_button.style.display = 'inline';
+	end_profiling = 1
+	$.get('/main/profile_disable')
+	console.log('stopped')
+    }
+	 
+    var chartColors = {
+        pressure: ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'],
+        flow: ['rgb(0, 100, 255)', 'rgb(0, 0, 255)'],
+        temperature: ['rgb(255, 0, 100)', 'rgb(255, 100, 0)']
+    };
+
+    var color = Chart.helpers.color;
+	
+    var zeroDataSet = {
+	data: [],
+        label: "template",
+	backgroundColor: chartColors.pressure[0].replace(')', ', 0.10)').replace('rgb', 'rgba'),
+        borderColor: chartColors.pressure[0],
+        pointBorderColor: chartColors.pressure[0],
+        pointBackgroundColor: chartColors.pressure[0],
+        fill: true,
+        pointRadius: 0,
+        outerGlowWidth: 40,
+        outerGlowColor: chartColors.pressure[0],
+        shadowBlur: 10,
+        shadowColor: chartColors.pressure[0]
+    };
+	 
+    dataset = function(graph, idx){
+	color = "rgb('255', '255', '255')"
+	{% if 'graphs' in args.keys() %}    
+	{% for graph in args['graphs'] %}
+	if (graph.includes('{{graph}}')){
+
+
+			add = $.extend( true, {}, zeroDataSet),
+		add.label = graph
+		color = chartColors.{{graph}}[idx]
+
+
+		add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
+		add.borderColor = color
+		add.pointBorderColor = color
+		add.pointBackgroundColor = color
+		add.fill = true
+		add.pointRadius = 0
+		add.outerGlowWidth = 40
+		add.outerGlowColor = color
+		add.shadowBlur = 10
+		add.shadowColor = color    
+		return add
+	}
+	{% endfor %}
+        {% endif %}
+    }
+	
+    clear_graphs = function(min){
+	{% if 'graphs' in args.keys() %}
+        {% for graph in args['graphs'] %}
+        while ({{graph}}.data.labels.length > min){
+                {{graph}}.data.labels.shift();
+                {{graph}}.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                });
+        }
+        {% endfor %}
+        {% endif %}
+    }
+	 
+    var chartOptions = {
+        maintainAspectRatio: false,
+        animation: false,
+	dragData: true,
+        dragX: true,	
+        layout: {
+            padding:{
+		left: 0,
+		right: 0,
+		top: 0,
+		bottom: -10
+	    }
+        },
+        scales:{
+            xAxes: [{
+                display: false
+            }],
+        },
+        title: {
+          display: false
+        },
+	elements: {
+		point : {
+			radius: 0
+		}
+	},
+	legend: {
+               	display: false,
+		position: 'right'
+	}
+    }
+
+    {% if 'graphs' in args.keys() %}
+    {% for graph in args['graphs'] %}
+	var {{graph}} = new Chart(document.getElementById("{{graph}}"), {
+	      	data: {
+			labels: [],
+			datasets: []
+		 },
+	      	options: chartOptions,
+	});
+    var {{graph}}_maintain = 0 
+    {% endfor %}
+    {% endif %}
+
+    var refresh = function(){
+	while (enable_refresh == 0){
+		sleep(100);
+	}
+	try{
+        var requests = $.get('/main/read');
+        var tm = requests.done(function(r){
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
+		var {{graph}}_ = 0
+		{% endfor %}
+    		{% endif %}
+		temps = [];
+       		for (const [key, value] of Object.entries(r)){
+			{% if 'graphs' in args.keys() %}
+    			{% for graph in args['graphs'] %}
+			if (key.includes("{{graph}}") && enable_refresh == 1){
+				console.log({{graph}}_)
+				{{graph}}.data.datasets[{{graph}}_].data.push(value)
+				{{graph}}_ = {{graph}}_ + 1
+			}
+                	{% endfor %}
+                	{% endif %}
+                        if (key.includes("time")){
+	                        {% if 'graphs' in args.keys() %}
+        	                {% for graph in args['graphs'] %}
+                                {{graph}}.data.labels.push(value)
+                                if ( (({{graph}}.data.labels.length > 400 && recording == 0) || {{graph}}.data.labels.length > 1000) && enable_refresh == 1  ){
+                                        {{graph}}.data.labels.shift();
+                                        {{graph}}.data.datasets.forEach((dataset) => {
+						if (dataset.type == 'line'){
+                                                	dataset.data.shift();
+						}
+                                        });
+                                }
+                        	{% endfor %}
+                        	{% endif %}
+                        }
+		}
+                {% if 'graphs' in args.keys() %}
+                {% for graph in args['graphs'] %}
+		{{graph}}.update();
+		{% endfor %}
+    		{% endif %}
+	setTimeout(refresh, 100);
+        });
+	} catch(err) {
+		console.log(err)
+		refresh();
+	}
+    }
+    
+    var init = function(){
+        var requests = $.get('/main/read');
+        var tm = requests.done(function(r){
+		{% if 'graphs' in args.keys() %}
+    		{% for graph in args['graphs'] %}
+		var {{graph}}_ = 0
+		{% endfor %}
+    		{% endif %}
+       		for (const [key, value] of Object.entries(r)){
+			{% if 'graphs' in args.keys() and 'source' in args.keys() %}
+    			{% for graph in args['graphs'] %}
+			{% for source in args['source'] %}
+			if (key.includes("{{graph}}")){
+				add = dataset("{{graph}}", {{graph}}_)
+				dataset.type = 'line'
+				{{graph}}.data.datasets[{{graph}}_] = (add)
+				{{graph}}_ = {{graph}}_ + 1
+			}
+			{% endfor %}
+			{% endfor %}
+    			{% endif %}
+			{% if 'graphs' in args.keys() and 'source' in args.keys() %}
+    			{% for graph in args['graphs'] %}
+			{% for source in args['source'] %}
+			if (key.includes("{{graph}}")){
+				add = dataset("{{graph}}", {{graph}}_)
+				dataset.type = 'scatter'
+				{{graph}}.data.datasets[{{graph}}_] = (add)
+				{{graph}}_ = {{graph}}_ + 1
+			}
+			{% endfor %}
+			{% endfor %}
+    			{% endif %}
+		}
+		//{% if 'graphs' in args.keys() %}
+    		//{% for graph in args['graphs'] %}
+		//{{graph}}.update();
+		//{{graph}}.options.scales.xAxes[0].display = true
+		//{{graph}}.update();
+		//{% endfor %}
+    		//{% endif %}
+        });
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    init();
+    refresh();
+
+</script>
+
+{% endblock %}

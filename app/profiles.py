@@ -1,11 +1,13 @@
 from time import time
+import csv
+import os
 import numpy as np
 from scipy import optimize as opt
 from scipy import interpolate as interp
 
 class Profiles:
-
-    custom_profiles = {
+    all_profiles = {}
+    backup_profiles = {
         'pressure':{
                 'grouphead': [[0,10,18,20,22,40,60],[1,4.5,6,7.5,9,7.5,4.5]]
                 },
@@ -17,26 +19,62 @@ class Profiles:
                 'grouphead': [[0,2,4,10,20,30,32,34,60],[0.1,2,4,4,4,4,2,0.1,0]]
         }
         }
+    custom_profiles = {}
+    pro_file = 'pro_file.csv'
 
+    def __init__(self):
+        if not os.path.isfile(self.pro_file):
+            self.pro_file = 'Documents/git-repos/beans/app/pro_file.csv'
+        if 1:
+            with open(self.pro_file, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for row in csv_reader:
+                    profile = {}
+                    profile['name'] = row.pop(0)
+                    profile['graph'] = row.pop(0)
+                    profile['source'] = row.pop(0)
+                    x = []; y = []
+                    while len(row)!= 0:
+                        x.append(float(row.pop(0))); y.append(float(row.pop(0)))
+                    profile['data'] = [x,y]
+                    self.all_profiles[profile['name']] = profile
+                    if 'base' in profile['name']:
+                        self.set_base(profile['name'])
+        #print(self.custom_profiles)
 
+    def set_base(self, profile_name):
+        if profile_name in self.all_profiles.keys():
+            if self.all_profiles[profile_name]['graph'] not in self.custom_profiles.keys():
+                self.custom_profiles[self.all_profiles[profile_name]['graph']] = {}
+                self.backup_profiles[self.all_profiles[profile_name]['graph']] = {}
+            self.custom_profiles[self.all_profiles[profile_name]['graph']][self.all_profiles[profile_name]['source']] = self.all_profiles[profile_name]['data']
+            self.backup_profiles[self.all_profiles[profile_name]['graph']][self.all_profiles[profile_name]['source']] = self.all_profiles[profile_name]['data']
+        else:
+            return 0
 
-    def gen_custom_profile_functions(self):
-        graphs = [key for key in self.custom_profiles.keys()]
-        for graph in graphs:
-            sources = [key for key in self.custom_profiles[graph].keys() if 'func' not in key]
-            for source in sources:
-                        x = self.custom_profiles[graph][source][0]
-                        y = self.custom_profiles[graph][source][1]; #print(x, y)
-                        weights = []
-                        for val in x:
-                            if val < 30:
-                                weights.append(0.5*((val/30)))
-                            else:
-                                weights.append(0.5*(np.abs(60-val)/30))
-                        self.custom_profiles[graph][f'func_{source}'] = interp.LSQUnivariateSpline(x, y, [18, 22], k=2) #interp.UnivariateSpline(x, y, w=weights, s=0.25) #interp1d(x, y, kind='cubic', bounds_error=False, fill_value=0)
-                        #opt.curve_fit(fit_func, x, y)
-                        #self.custom_profiles[graph][f'func_{source}'] = fit_func.copy()
+    def save_current_profiles(self, name, graph):
+        for source in self.custom_profiles[graph].keys():
+            self.save_profile(f'{name}_{source}', graph, source, self.custom_profiles[graph][source][0], self.custom_profiles[graph][source][1])
+        return 1
 
+    def save_profile(self, name, graph, source, xdata, ydata):
+        row = [name, graph, source]
+        while len(xdata) != 0:
+            row.append(xdata.pop(0))
+            row.append(ydata.pop(0))
+        with open(self.pro_file, 'a') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(row)
+        profile = {}
+        profile['name'] = row.pop(0)
+        profile['graph'] = row.pop(0)
+        profile['source'] = row.pop(0)
+        x = []; y = []
+        while len(row)!= 0:
+            x.append(row.pop(0)); y.append(row.pop(0))
+        profile['data'] = [x,y]
+        self.all_profiles[profile['name']] = profile
+        return 1
 
     def current_custom_profile(self, graph):
         results = []
@@ -50,7 +88,9 @@ class Profiles:
                 results.append(result)
         return results
 
-    def check_start(func):
+
+
+'''    def check_start(func):
         def wrapper(self, gen, time_, type=None):
             if 'start_time' not in gen.keys():
                 tmp = gen.copy()
@@ -117,3 +157,4 @@ class Profiles:
             return np.exp(20 - (time_ - gen['start_time']))
 
 
+'''
