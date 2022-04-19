@@ -79,7 +79,7 @@ class SiteFrame:
         self.pull_readings(4)
         while self.run_adc_thread:
             self.announcer.announce(self.sse_dat())
-            self.pull_readings(0.2)
+            self.pull_readings(0.1)
             #print('readings:',len(self.raw_data['temp_br']))
             self.limit_datapoints(self.reading_limit)
 
