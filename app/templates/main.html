@@ -646,9 +646,9 @@
     //init();
     //refresh();
 
-var myWorker = new Worker('Worker.js');
+var myWorker = new Worker('/static/Main/js/Worker.js');
 message = {
-	event: 'init'
+	event: 'init',
 	data: {}
 }
 {% if 'graphs' in args.keys() %}
@@ -657,6 +657,18 @@ message.data['{{graph}}'] = '{{graph}}'
 {% endfor %}
 {% endif %}
 myWorker.postMessage([message]);
+
+var source = new EventSource("/main/continuous_read");
+source.onmessage = function(event){
+       	//console.log(event.data)
+	myWorker.postMessage({
+	event: 'update',
+	data: JSON.parse(event.data)
+	});
+	//myWorker.postMessage(message)
+	//update_graphs(JSON.parse(event.data))
+}
+
 		 
 </script>
 

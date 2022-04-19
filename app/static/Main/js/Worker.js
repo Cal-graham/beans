@@ -1,13 +1,13 @@
 //Chart Worker
 
 onmessage = function(e) {
-  console.log(e);
-  switch(e.event) {
+  console.log(e.data);
+  switch(e.data.event) {
   case 'init':
-    init(e.data); //key for each graph
+    init(e.data.data); //key for each graph
     break;
-    case 'profiling':
-    profiling_stage = e.data
+    case 'update':
+    update_graphs(e.data.data)
     break;
   }
 }
@@ -27,8 +27,8 @@ init = function(data){
               datasets: [dataset('', 0)]
             }
         });
-    var graphs[graph.concat('_maintain')] = 0 
-    var graphs[graph.concat('_')] = 0
+    graphs[graph.concat('_maintain')] = 0 
+    graphs[graph.concat('_')] = 0
   }
   
   var requests = $.get('/main/read');
@@ -61,11 +61,11 @@ init = function(data){
       graphs[graph].update();
     }
    });
-  var source = new EventSource("/main/continuous_read");
-	source.onmessage = function(event){
-    		console.log(event.data)
-		    update_graphs(JSON.parse(event.data))
-	}
+ // var source = new EventSource("/main/continuous_read");
+//	source.onmessage = function(event){
+ //   		console.log(event.data)/
+//		    update_graphs(JSON.parse(event.data))
+//	}
 }
 
 //Graph Updates//
@@ -91,7 +91,7 @@ update_graphs = function(r){
                                 graphs[graph].data.labels.push(value)
                                 if ( profiling_stage < 3 && graphs[graph].data.labels.length > 400 ){ 
                                         graphs[graph].data.labels.shift();
-                                        var graphs[graph.concat('__')] = 0
+                                        graphs[graph.concat('__')] = 0
                                         graphs[graph].data.datasets.forEach((dataset) => {
                                                 if (graphs[graph.concat('__')] < graphs[graph.concat('_maintain')]){
                                                         dataset.data.shift();
@@ -118,7 +118,7 @@ update_graphs = function(r){
         graphs[graph].update();
       }
     }
-         
+}         
 //Graph Generation Objects//
              var chartOptions = {
         maintainAspectRatio: false,
@@ -161,7 +161,7 @@ update_graphs = function(r){
         temperature: ['rgb(255, 0, 100)', 'rgb(255, 100, 0)']
     };
 
-    var color = Chart.helpers.color;
+ //   var color = Chart.helpers.color;
 	
     var zeroDataSet = {
 	data: [],
@@ -191,7 +191,7 @@ update_graphs = function(r){
   }
 	add = $.extend( true, {}, zeroDataSet),
 	add.label = graph;
-	add.showLine = tr}ue;
+	add.showLine = true;
 	add.backgroundColor = color.replace(')', ', 0.10)').replace('rgb', 'rgba');
 	add.borderColor = color
 	add.pointBorderColor = color
