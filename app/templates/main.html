@@ -643,9 +643,21 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    init();
+    //init();
     //refresh();
 
+var myWorker = new Worker('Worker.js');
+message = {
+	event: 'init'
+	data: {}
+}
+{% if 'graphs' in args.keys() %}
+{% for graph in args['graphs'] %}
+message.data['{{graph}}'] = '{{graph}}'
+{% endfor %}
+{% endif %}
+myWorker.postMessage([message]);
+		 
 </script>
 
 {% endblock %}
